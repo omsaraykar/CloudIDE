@@ -10,9 +10,9 @@ export function HeroCanvas3D() {
     const container = containerRef.current;
     if (!container) return;
 
-    // Scene, Camera, Renderer
+    // 1. Scene Setup
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x05070a, 0.035);
+    scene.fog = new THREE.FogExp2(0x05070a, 0.04);
 
     const camera = new THREE.PerspectiveCamera(
       45,
@@ -20,8 +20,7 @@ export function HeroCanvas3D() {
       0.1,
       100
     );
-    camera.position.z = 8;
-    camera.position.y = 0.5;
+    camera.position.set(0, 1.2, 9.5);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -31,143 +30,299 @@ export function HeroCanvas3D() {
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.3;
     container.appendChild(renderer.domElement);
 
-    // Group to hold all objects for unified rotation & mouse tilt
+    // Root group for all interactive tilt & rotation
     const worldGroup = new THREE.Group();
     scene.add(worldGroup);
 
-    // 1. Central Quantum Core (Torus Knot Wireframe + Solid Core)
-    const coreGeometry = new THREE.TorusKnotGeometry(1.2, 0.35, 128, 32, 2, 3);
-    const coreWireMaterial = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.35,
-    });
-    const coreWireMesh = new THREE.Mesh(coreGeometry, coreWireMaterial);
-    worldGroup.add(coreWireMesh);
+    // Track resources for safe disposal
+    const disposables: { dispose: () => void }[] = [];
+    const register = <T extends { dispose: () => void }>(item: T): T => {
+      disposables.push(item);
+      return item;
+    };
 
-    // Inner glowing sphere
-    const innerSphereGeo = new THREE.SphereGeometry(0.75, 32, 32);
-    const innerSphereMat = new THREE.MeshStandardMaterial({
-      color: 0x6366f1,
-      emissive: 0x4f46e5,
-      emissiveIntensity: 0.8,
-      roughness: 0.2,
-      metalness: 0.8,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.5,
-    });
-    const innerSphere = new THREE.Mesh(innerSphereGeo, innerSphereMat);
-    worldGroup.add(innerSphere);
+    // -------------------------------------------------------------
+    // 2. CENTRAL CONTAINER POD (Symbolizing Docker Containerization)
+    // -------------------------------------------------------------
+    const containerGroup = new THREE.Group();
+    worldGroup.add(containerGroup);
 
-    // 2. Dual Orbiting Cyber Rings
-    const ringGeo1 = new THREE.RingGeometry(2.4, 2.45, 64);
-    const ringMat1 = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.4,
-    });
-    const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
-    ring1.rotation.x = Math.PI / 3;
-    worldGroup.add(ring1);
+    // Glass walls of container
+    const boxGeo = register(new THREE.BoxGeometry(2.4, 2.4, 2.4));
+    const glassMat = register(
+      new THREE.MeshPhysicalMaterial({
+        color: 0x0f172a,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.15,
+        roughness: 0.1,
+        metalness: 0.8,
+        transparent: true,
+        opacity: 0.25,
+        transmission: 0.6,
+        ior: 1.4,
+      })
+    );
+    const glassBox = new THREE.Mesh(boxGeo, glassMat);
+    containerGroup.add(glassBox);
 
-    const ringGeo2 = new THREE.RingGeometry(3.0, 3.04, 64);
-    const ringMat2 = new THREE.MeshBasicMaterial({
-      color: 0x818cf8,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.25,
-    });
-    const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
-    ring2.rotation.x = -Math.PI / 4;
-    ring2.rotation.y = Math.PI / 6;
-    worldGroup.add(ring2);
+    // Neon edge rails
+    const boxEdges = register(new THREE.EdgesGeometry(boxGeo));
+    const edgeMat = register(
+      new THREE.LineBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.85,
+        linewidth: 2,
+      })
+    );
+    const edgeLines = new THREE.LineSegments(boxEdges, edgeMat);
+    containerGroup.add(edgeLines);
 
-    // 3. Floating Particle Constellation (1,200 points)
-    const particleCount = 1200;
+    // 8 Corner reinforcement brackets (Container pads)
+    const cornerGeo = register(new THREE.BoxGeometry(0.35, 0.35, 0.35));
+    const cornerMat = register(
+      new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 0.4,
+        roughness: 0.3,
+        metalness: 0.9,
+      })
+    );
+    const cornerPositions = [
+      [-1.2, -1.2, -1.2],
+      [-1.2, -1.2, 1.2],
+      [-1.2, 1.2, -1.2],
+      [-1.2, 1.2, 1.2],
+      [1.2, -1.2, -1.2],
+      [1.2, -1.2, 1.2],
+      [1.2, 1.2, -1.2],
+      [1.2, 1.2, 1.2],
+    ];
+    cornerPositions.forEach(([x, y, z]) => {
+      const corner = new THREE.Mesh(cornerGeo, cornerMat);
+      corner.position.set(x, y, z);
+      containerGroup.add(corner);
+    });
+
+    // -------------------------------------------------------------
+    // 3. FLOATING HOLOGRAPHIC CODE GLYPH: < / > (Symbolizing Editor & Code)
+    // -------------------------------------------------------------
+    const codeGlyphGroup = new THREE.Group();
+    containerGroup.add(codeGlyphGroup);
+
+    const segmentMat = register(
+      new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 1.8,
+        roughness: 0.2,
+        metalness: 0.5,
+      })
+    );
+
+    // Helper to create glowing cylinder bars for the `< / >` code symbol
+    const createBar = (length: number, rotZ: number, posX: number, posY: number) => {
+      const geo = register(new THREE.CylinderGeometry(0.045, 0.045, length, 16));
+      const mesh = new THREE.Mesh(geo, segmentMat);
+      mesh.rotation.z = rotZ;
+      mesh.position.set(posX, posY, 0);
+      codeGlyphGroup.add(mesh);
+    };
+
+    // Left Angle Bracket `<`
+    createBar(0.65, Math.PI / 4, -0.65, 0.22);
+    createBar(0.65, -Math.PI / 4, -0.65, -0.22);
+
+    // Slash `/`
+    createBar(0.95, -Math.PI / 7, 0, 0);
+
+    // Right Angle Bracket `>`
+    createBar(0.65, -Math.PI / 4, 0.65, 0.22);
+    createBar(0.65, Math.PI / 4, 0.65, -0.22);
+
+    // Inner glowing energy core inside the code glyph
+    const coreSphereGeo = register(new THREE.SphereGeometry(0.28, 24, 24));
+    const coreSphereMat = register(
+      new THREE.MeshBasicMaterial({
+        color: 0x60a5fa,
+        transparent: true,
+        opacity: 0.65,
+      })
+    );
+    const coreSphere = new THREE.Mesh(coreSphereGeo, coreSphereMat);
+    codeGlyphGroup.add(coreSphere);
+
+    // -------------------------------------------------------------
+    // 4. SATELLITE RUNTIME PODS (JS, TS, Python, Docker)
+    // -------------------------------------------------------------
+    const POD_CONFIGS = [
+      { color: 0xf59e0b, name: 'Node.js', angle: 0 },
+      { color: 0x3b82f6, name: 'TypeScript', angle: Math.PI * 0.5 },
+      { color: 0x10b981, name: 'Python', angle: Math.PI },
+      { color: 0x06b6d4, name: 'Docker', angle: Math.PI * 1.5 },
+    ];
+
+    const satelliteOrbitRadius = 4.2;
+    const satellites: {
+      mesh: THREE.Group;
+      angle: number;
+      speed: number;
+      color: number;
+      laser: THREE.Line;
+      packet: THREE.Mesh;
+      packetProgress: number;
+    }[] = [];
+
+    const satelliteBoxGeo = register(new THREE.BoxGeometry(0.7, 0.7, 0.7));
+    const satelliteEdges = register(new THREE.EdgesGeometry(satelliteBoxGeo));
+
+    POD_CONFIGS.forEach((cfg) => {
+      const satGroup = new THREE.Group();
+      worldGroup.add(satGroup);
+
+      // Mini pod body
+      const satMat = register(
+        new THREE.MeshStandardMaterial({
+          color: 0x090d16,
+          emissive: cfg.color,
+          emissiveIntensity: 0.5,
+          roughness: 0.3,
+          metalness: 0.8,
+          transparent: true,
+          opacity: 0.7,
+        })
+      );
+      const satMesh = new THREE.Mesh(satelliteBoxGeo, satMat);
+      satGroup.add(satMesh);
+
+      // Glowing edge lines
+      const satEdgeMat = register(
+        new THREE.LineBasicMaterial({
+          color: cfg.color,
+          transparent: true,
+          opacity: 0.9,
+        })
+      );
+      const satEdgeLine = new THREE.LineSegments(satelliteEdges, satEdgeMat);
+      satGroup.add(satEdgeLine);
+
+      // Laser stream connecting satellite to central container
+      const linePositions = new Float32Array(6);
+      const lineGeo = register(new THREE.BufferGeometry());
+      lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+      const lineMat = register(
+        new THREE.LineDashedMaterial({
+          color: cfg.color,
+          dashSize: 0.2,
+          gapSize: 0.15,
+          transparent: true,
+          opacity: 0.45,
+        })
+      );
+      const laserLine = new THREE.Line(lineGeo, lineMat);
+      worldGroup.add(laserLine);
+
+      // Data Packet travelling along the laser stream
+      const packetGeo = register(new THREE.SphereGeometry(0.08, 12, 12));
+      const packetMat = register(
+        new THREE.MeshBasicMaterial({
+          color: cfg.color,
+          transparent: true,
+          opacity: 0.9,
+        })
+      );
+      const packetMesh = new THREE.Mesh(packetGeo, packetMat);
+      worldGroup.add(packetMesh);
+
+      satellites.push({
+        mesh: satGroup,
+        angle: cfg.angle,
+        speed: 0.25,
+        color: cfg.color,
+        laser: laserLine,
+        packet: packetMesh,
+        packetProgress: Math.random(),
+      });
+    });
+
+    // -------------------------------------------------------------
+    // 5. CYBER MAINFRAME GRID FLOOR (Symbolizing Cloud Infrastructure)
+    // -------------------------------------------------------------
+    const gridHelper = register(new THREE.GridHelper(26, 26, 0x38bdf8, 0x1e293b));
+    gridHelper.position.y = -3.2;
+    (gridHelper.material as THREE.Material).transparent = true;
+    (gridHelper.material as THREE.Material).opacity = 0.35;
+    worldGroup.add(gridHelper);
+
+    // -------------------------------------------------------------
+    // 6. STREAMING DATA PARTICLES (Symbolizing Socket.IO & Realtime Packets)
+    // -------------------------------------------------------------
+    const particleCount = 900;
     const particlePositions = new Float32Array(particleCount * 3);
     const particleColors = new Float32Array(particleCount * 3);
 
-    const colorCyan = new THREE.Color(0x38bdf8);
-    const colorIndigo = new THREE.Color(0x818cf8);
-    const colorEmerald = new THREE.Color(0x34d399);
+    const c1 = new THREE.Color(0x38bdf8);
+    const c2 = new THREE.Color(0x818cf8);
+    const c3 = new THREE.Color(0x34d399);
 
     for (let i = 0; i < particleCount; i++) {
-      // Distribute in a spherical cloud around the scene
-      const r = 2.5 + Math.random() * 4.5;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
+      // Cylinder cloud distribution
+      const radius = 2.0 + Math.random() * 5.5;
+      const angle = Math.random() * Math.PI * 2;
+      const y = (Math.random() - 0.5) * 5.0;
 
-      const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.sin(phi) * Math.sin(theta);
-      const z = r * Math.cos(phi);
-
-      particlePositions[i * 3] = x;
+      particlePositions[i * 3] = radius * Math.cos(angle);
       particlePositions[i * 3 + 1] = y;
-      particlePositions[i * 3 + 2] = z;
+      particlePositions[i * 3 + 2] = radius * Math.sin(angle);
 
-      // Color variation between cyan, indigo and emerald
-      const randColor = Math.random();
-      const chosenColor = randColor < 0.6 ? colorCyan : randColor < 0.85 ? colorIndigo : colorEmerald;
-
-      particleColors[i * 3] = chosenColor.r;
-      particleColors[i * 3 + 1] = chosenColor.g;
-      particleColors[i * 3 + 2] = chosenColor.b;
+      const color = Math.random() < 0.55 ? c1 : Math.random() < 0.85 ? c2 : c3;
+      particleColors[i * 3] = color.r;
+      particleColors[i * 3 + 1] = color.g;
+      particleColors[i * 3 + 2] = color.b;
     }
 
-    const particleGeometry = new THREE.BufferGeometry();
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+    const particleGeo = register(new THREE.BufferGeometry());
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
 
-    // Create a circular particle texture
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.3, 'rgba(56, 189, 248, 0.8)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 16, 16);
-    }
-    const particleTexture = new THREE.CanvasTexture(canvas);
-
-    const particleMaterial = new THREE.PointsMaterial({
-      size: 0.08,
-      map: particleTexture,
-      transparent: true,
-      vertexColors: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    const particleMat = register(
+      new THREE.PointsMaterial({
+        size: 0.065,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending,
+      })
+    );
+    const particles = new THREE.Points(particleGeo, particleMat);
     worldGroup.add(particles);
 
-    // 4. Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    // -------------------------------------------------------------
+    // 7. LIGHTING
+    // -------------------------------------------------------------
+    const ambientLight = register(new THREE.AmbientLight(0xffffff, 0.7));
     scene.add(ambientLight);
 
-    const pointLight1 = new THREE.PointLight(0x38bdf8, 3, 20);
-    pointLight1.position.set(4, 3, 4);
-    scene.add(pointLight1);
+    const keyLight = register(new THREE.PointLight(0x38bdf8, 4, 18));
+    keyLight.position.set(4, 4, 5);
+    scene.add(keyLight);
 
-    const pointLight2 = new THREE.PointLight(0x818cf8, 2.5, 20);
-    pointLight2.position.set(-4, -3, -2);
-    scene.add(pointLight2);
+    const rimLight = register(new THREE.PointLight(0x818cf8, 3, 18));
+    rimLight.position.set(-4, -2, -3);
+    scene.add(rimLight);
 
-    // 5. Mouse Interaction with Smooth Lerping
+    // -------------------------------------------------------------
+    // 8. INTERACTIVITY: MOUSE TRACKING & PARALLAX SCROLL
+    // -------------------------------------------------------------
     let mouseX = 0;
     let mouseY = 0;
     let targetRotationX = 0;
     let targetRotationY = 0;
+    let scrollY = 0;
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
@@ -177,82 +332,98 @@ export function HeroCanvas3D() {
       mouseY = y * 2;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-
-    let scrollY = 0;
     const handleScroll = () => {
       scrollY = window.scrollY || 0;
     };
+
+    window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Resize Handler
     const handleResize = () => {
       if (!container) return;
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
-
     window.addEventListener('resize', handleResize);
 
-    // 6. Animation Loop
+    // -------------------------------------------------------------
+    // 9. ANIMATION LOOP
+    // -------------------------------------------------------------
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+      const delta = clock.getDelta();
+      const elapsed = clock.getElapsedTime();
 
-      // Continuous rotation
-      coreWireMesh.rotation.x = elapsedTime * 0.25;
-      coreWireMesh.rotation.y = elapsedTime * 0.35;
+      // Slow majestic rotation of central container
+      containerGroup.rotation.y = elapsed * 0.2;
+      containerGroup.rotation.x = Math.sin(elapsed * 0.3) * 0.12;
 
-      innerSphere.rotation.x = -elapsedTime * 0.2;
-      innerSphere.rotation.y = -elapsedTime * 0.3;
+      // Inner code glyph floats and bobs gently
+      codeGlyphGroup.position.y = Math.sin(elapsed * 1.6) * 0.1;
+      codeGlyphGroup.rotation.y = -elapsed * 0.4;
+      const pulseScale = 1 + Math.sin(elapsed * 2.5) * 0.05;
+      coreSphere.scale.set(pulseScale, pulseScale, pulseScale);
 
-      ring1.rotation.z = elapsedTime * 0.15;
-      ring2.rotation.z = -elapsedTime * 0.1;
+      // Rotate orbiting satellites & compute laser streams
+      satellites.forEach((sat, i) => {
+        sat.angle += sat.speed * delta;
+        const x = Math.cos(sat.angle) * satelliteOrbitRadius;
+        const z = Math.sin(sat.angle) * satelliteOrbitRadius;
+        const y = Math.sin(sat.angle * 2 + i) * 0.6;
 
-      particles.rotation.y = elapsedTime * 0.04;
-      particles.rotation.x = Math.sin(elapsedTime * 0.1) * 0.05;
+        sat.mesh.position.set(x, y, z);
+        sat.mesh.rotation.x += delta * 0.8;
+        sat.mesh.rotation.y += delta * 1.2;
 
-      // Pulse scale
-      const scale = 1 + Math.sin(elapsedTime * 1.5) * 0.04;
-      coreWireMesh.scale.set(scale, scale, scale);
+        // Update laser line vertices from satellite to center
+        const linePos = sat.laser.geometry.attributes.position as THREE.BufferAttribute;
+        linePos.setXYZ(0, x, y, z);
+        linePos.setXYZ(1, 0, 0, 0);
+        linePos.needsUpdate = true;
+        sat.laser.computeLineDistances();
 
-      // Smooth mouse & scroll parallax
-      const scrollOffset = scrollY * 0.0015;
-      targetRotationY = mouseX * 0.6;
-      targetRotationX = mouseY * 0.4 + scrollOffset;
+        // Animate data packet moving along laser
+        sat.packetProgress = (sat.packetProgress + delta * 0.7) % 1.0;
+        const packetX = THREE.MathUtils.lerp(x, 0, sat.packetProgress);
+        const packetY = THREE.MathUtils.lerp(y, 0, sat.packetProgress);
+        const packetZ = THREE.MathUtils.lerp(z, 0, sat.packetProgress);
+        sat.packet.position.set(packetX, packetY, packetZ);
+      });
 
-      worldGroup.rotation.y += (targetRotationY - worldGroup.rotation.y) * 0.05;
-      worldGroup.rotation.x += (targetRotationX - worldGroup.rotation.x) * 0.05;
+      // Slowly rotate particle field
+      particles.rotation.y = elapsed * 0.03;
 
-      // Subtle vertical camera drift with scroll
-      camera.position.y = 0.5 - scrollOffset * 0.5;
+      // Mouse & scroll parallax
+      const scrollOffset = scrollY * 0.0012;
+      targetRotationY = mouseX * 0.45;
+      targetRotationX = mouseY * 0.3 + scrollOffset;
+
+      worldGroup.rotation.y += (targetRotationY - worldGroup.rotation.y) * 0.04;
+      worldGroup.rotation.x += (targetRotationX - worldGroup.rotation.x) * 0.04;
+
+      // Smooth camera drift with scroll
+      camera.position.y = 1.2 - scrollOffset * 0.8;
 
       renderer.render(scene, camera);
     };
 
     animate();
 
+    // -------------------------------------------------------------
+    // CLEANUP
+    // -------------------------------------------------------------
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+
+      disposables.forEach((d) => d.dispose());
       renderer.dispose();
-      coreGeometry.dispose();
-      coreWireMaterial.dispose();
-      innerSphereGeo.dispose();
-      innerSphereMat.dispose();
-      ringGeo1.dispose();
-      ringMat1.dispose();
-      ringGeo2.dispose();
-      ringMat2.dispose();
-      particleGeometry.dispose();
-      particleMaterial.dispose();
-      particleTexture.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
@@ -263,7 +434,7 @@ export function HeroCanvas3D() {
     <div
       ref={containerRef}
       className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
-      style={{ opacity: 0.85 }}
+      style={{ opacity: 0.9 }}
     />
   );
 }
