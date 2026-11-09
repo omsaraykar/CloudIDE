@@ -66,11 +66,11 @@ export class WebSocketGateway {
             workspace,
             cols,
             rows,
-            (data: string) => {
-              socket.emit('terminal:data', { sessionId, data });
+            (sid: string, data: string) => {
+              socket.emit('terminal:data', { sessionId: sid, data });
             },
-            (exitCode: number) => {
-              socket.emit('terminal:exit', { sessionId, exitCode });
+            (sid: string, exitCode: number) => {
+              socket.emit('terminal:exit', { sessionId: sid, exitCode });
             }
           );
 

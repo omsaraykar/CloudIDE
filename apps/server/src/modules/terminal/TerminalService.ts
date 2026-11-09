@@ -25,8 +25,8 @@ export class TerminalService {
     workspace: Workspace,
     cols = 80,
     rows = 24,
-    onData: (data: string) => void,
-    onExit: (code: number) => void
+    onData: (sessionId: string, data: string) => void,
+    onExit: (sessionId: string, code: number) => void
   ): Promise<string> {
     const sessionId = crypto.randomUUID();
 
@@ -49,12 +49,12 @@ export class TerminalService {
         });
 
         stream.on('data', (chunk: Buffer) => {
-          onData(chunk.toString('utf-8'));
+          onData(sessionId, chunk.toString('utf-8'));
         });
 
         stream.on('end', () => {
           this.sessions.delete(sessionId);
-          onExit(0);
+          onExit(sessionId, 0);
         });
 
         this.sessions.set(sessionId, {
@@ -66,7 +66,7 @@ export class TerminalService {
         });
 
         // Send welcoming banner
-        onData(`\x1b[1;36mConnected to Docker container for ${workspace.name}\x1b[0m\r\n/workspace $ `);
+        onData(sessionId, `\x1b[1;36mConnected to Docker container for ${workspace.name}\x1b[0m\r\n/workspace $ `);
         return sessionId;
       } catch (err) {
         console.warn(`[TerminalService] Docker TTY attach failed, falling back to local shell:`, err);
@@ -88,22 +88,22 @@ export class TerminalService {
     });
 
     proc.stdout?.on('data', (chunk: Buffer) => {
-      onData(chunk.toString());
+      onData(sessionId, chunk.toString());
     });
 
     proc.stderr?.on('data', (chunk: Buffer) => {
-      onData(chunk.toString());
+      onData(sessionId, chunk.toString());
     });
 
     proc.on('close', (code) => {
       this.sessions.delete(sessionId);
-      onExit(code ?? 0);
+      onExit(sessionId, code ?? 0);
     });
 
     proc.on('error', (err) => {
-      onData(`\r\n\x1b[31mTerminal error: ${err.message}\x1b[0m\r\n`);
+      onData(sessionId, `\r\n\x1b[31mTerminal error: ${err.message}\x1b[0m\r\n`);
       this.sessions.delete(sessionId);
-      onExit(1);
+      onExit(sessionId, 1);
     });
 
     this.sessions.set(sessionId, {
@@ -114,7 +114,7 @@ export class TerminalService {
       createdAt: Date.now(),
     });
 
-    onData(`\x1b[1;34mConnected to CloudIDE Local Sandbox Terminal [${workspace.name}]\x1b[0m\r\n`);
+    onData(sessionId, `\x1b[1;34mConnected to CloudIDE Local Sandbox Terminal [${workspace.name}]\x1b[0m\r\n`);
     return sessionId;
   }
 
