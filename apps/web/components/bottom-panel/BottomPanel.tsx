@@ -17,8 +17,8 @@ const XtermTerminal = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-full w-full bg-[#0a0d12] flex items-center justify-center text-xs text-slate-500">
-        Loading Terminal...
+      <div className="h-full w-full bg-[#09090b] flex items-center justify-center text-xs text-zinc-500 font-mono">
+        Starting Bash Terminal...
       </div>
     ),
   }
@@ -37,20 +37,20 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
   } = useWorkspaceStore();
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#080b10] border-t border-white/[0.06] select-none">
+    <div className="h-full w-full flex flex-col bg-[#09090b] border-t border-white/[0.08] select-none text-zinc-300">
       {/* Panel Top Header / Tabs */}
-      <div className="h-9 px-2 bg-[#0c0f16] border-b border-white/[0.06] flex items-center justify-between text-xs">
+      <div className="h-9 px-2.5 bg-[#0c0c0e] border-b border-white/[0.06] flex items-center justify-between text-xs">
         <div className="flex items-center gap-1">
           {/* Terminal Tab */}
           <button
             onClick={() => setBottomTab('terminal')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all relative ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all relative ${
               activeBottomTab === 'terminal'
-                ? 'text-sky-400 bg-white/[0.04]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.02]'
+                ? 'text-zinc-100 bg-white/[0.06]'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]'
             }`}
           >
-            <TerminalIcon className="w-3.5 h-3.5" />
+            <TerminalIcon className="w-3.5 h-3.5 text-sky-400" />
             <span>Bash Terminal</span>
             {activeBottomTab === 'terminal' && (
               <motion.div
@@ -63,15 +63,15 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
           {/* Problems Tab */}
           <button
             onClick={() => setBottomTab('problems')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all relative ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all relative ${
               activeBottomTab === 'problems'
-                ? 'text-sky-400 bg-white/[0.04]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.02]'
+                ? 'text-zinc-100 bg-white/[0.06]'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]'
             }`}
           >
             <AlertCircle className="w-3.5 h-3.5" />
             <span>Problems</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/[0.04] text-slate-400">0</span>
+            <span className="text-[10px] px-1.5 rounded bg-white/[0.06] text-zinc-400 font-mono">0</span>
             {activeBottomTab === 'problems' && (
               <motion.div
                 layoutId="bottom-tab-active"
@@ -82,18 +82,18 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
         </div>
 
         {/* Panel Actions */}
-        <div className="flex items-center gap-1 text-slate-400">
+        <div className="flex items-center gap-1 text-zinc-400">
           <div className="flex items-center gap-1.5 mr-2">
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>bash (container)</span>
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.04] text-zinc-300 border border-white/[0.06]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>root shell</span>
             </span>
           </div>
 
           {onToggleMaximize && (
             <button
               onClick={onToggleMaximize}
-              className="p-1 rounded-md hover:bg-white/[0.05] hover:text-white transition-colors"
+              className="p-1 rounded hover:bg-white/[0.06] hover:text-white transition-colors"
               title={isMaximized ? 'Restore Panel' : 'Maximize Panel'}
             >
               {isMaximized ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -102,7 +102,7 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
 
           <button
             onClick={toggleBottomPanel}
-            className="p-1 rounded-md hover:bg-white/[0.05] hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-white/[0.06] hover:text-white transition-colors"
             title="Close Panel"
           >
             <X className="w-3.5 h-3.5" />
@@ -110,15 +110,17 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
         </div>
       </div>
 
-      {/* Tab Panels */}
-      <div className="flex-1 overflow-hidden bg-[#05070a]">
-        {activeBottomTab === 'terminal' && <XtermTerminal />}
+      {/* Panel Body */}
+      <div className="flex-1 w-full h-[calc(100%-36px)] overflow-hidden bg-[#09090b]">
+        {activeBottomTab === 'terminal' && (
+          <div className="h-full w-full">
+            <XtermTerminal />
+          </div>
+        )}
 
         {activeBottomTab === 'problems' && (
-          <div className="h-full w-full p-6 flex flex-col items-center justify-center text-center text-xs text-slate-400 select-none">
-            <AlertCircle className="w-8 h-8 text-emerald-400 mb-2 opacity-80" />
-            <p className="font-semibold text-white mb-0.5">No problems detected in workspace</p>
-            <p className="text-[11px] text-slate-500">Syntax diagnostics and errors will appear here</p>
+          <div className="h-full w-full flex items-center justify-center text-xs text-zinc-500 font-mono">
+            No problems detected in workspace.
           </div>
         )}
       </div>

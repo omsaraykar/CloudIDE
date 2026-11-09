@@ -32,7 +32,7 @@ export function WorkspaceLayout() {
               <Panel defaultSize={20} minSize={14} maxSize={40} className="h-full">
                 <FileExplorer />
               </Panel>
-              <PanelResizeHandle className="w-[3px] bg-ide-border hover:bg-ide-accent transition-colors cursor-col-resize active:bg-ide-accent" />
+              <PanelResizeHandle className="w-[1px] bg-white/[0.08] hover:bg-sky-500/80 transition-colors cursor-col-resize active:bg-sky-500" />
             </>
           )}
 
@@ -49,7 +49,7 @@ export function WorkspaceLayout() {
                         <Panel defaultSize={50} minSize={20} className="h-full">
                           <CodeEditor />
                         </Panel>
-                        <PanelResizeHandle className="w-[3px] bg-ide-border hover:bg-sky-500/50 transition-colors cursor-col-resize active:bg-sky-500" />
+                        <PanelResizeHandle className="w-[1px] bg-white/[0.08] hover:bg-sky-500/80 transition-colors cursor-col-resize active:bg-sky-500" />
                         <Panel defaultSize={50} minSize={25} className="h-full">
                           <BrowserPreview />
                         </Panel>
@@ -63,7 +63,7 @@ export function WorkspaceLayout() {
 
               {/* Resize Handle for Bottom Panel */}
               {isBottomPanelOpen && !isBottomMaximized && (
-                <PanelResizeHandle className="h-[3px] bg-ide-border hover:bg-ide-accent transition-colors cursor-row-resize active:bg-ide-accent" />
+                <PanelResizeHandle className="h-[1px] bg-white/[0.08] hover:bg-sky-500/80 transition-colors cursor-row-resize active:bg-sky-500" />
               )}
 
               {/* Bottom Integrated Terminal & Output Panel */}

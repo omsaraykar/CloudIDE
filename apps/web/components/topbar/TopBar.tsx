@@ -9,9 +9,8 @@ import {
   CircleDot,
   Terminal as TerminalIcon,
   ChevronLeft,
-  Cpu,
-  Sparkles,
   Globe,
+  PanelLeft,
 } from 'lucide-react';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 
@@ -24,6 +23,8 @@ export function TopBar() {
     saveStatus,
     toggleBottomPanel,
     isBottomPanelOpen,
+    toggleSidebar,
+    isSidebarOpen,
     isPreviewOpen,
     togglePreview,
   } = useWorkspaceStore();
@@ -37,79 +38,72 @@ export function TopBar() {
   };
   const isHtmlDetected = isHtmlActive || hasOpenHtml || checkTreeHtml(fileTree);
 
-  const languageLabel = (lang?: string) => {
-    switch (lang) {
-      case 'javascript':
-        return 'Node.js (JS)';
-      case 'typescript':
-        return 'TypeScript';
-      case 'python':
-        return 'Python 3';
-      case 'html':
-        return 'HTML5 / Web';
-      default:
-        return 'JavaScript';
-    }
-  };
-
   return (
-    <header className="h-12 bg-[#090c12]/90 backdrop-blur-md border-b border-white/[0.06] flex items-center justify-between px-3 select-none z-20">
-      {/* Left: Brand + Back + Workspace Info */}
-      <div className="flex items-center gap-3">
+    <header className="h-[42px] bg-[#09090b] border-b border-white/[0.08] flex items-center justify-between px-3 select-none z-20 font-sans">
+      {/* Left: Dashboard Back + Sidebar Toggle + Branding + Workspace Name */}
+      <div className="flex items-center gap-2">
         <Link
           href="/"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.04] transition-all text-xs font-medium group"
-          title="Back to Dashboard"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+          title="Back to Welcome / Login"
         >
-          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          <span className="hidden sm:inline">Dashboard</span>
+          <ChevronLeft className="w-4 h-4" />
         </Link>
 
-        <div className="h-4 w-[1px] bg-white/[0.08]" />
+        <button
+          onClick={toggleSidebar}
+          className={`p-1.5 rounded-md text-xs transition-colors ${
+            isSidebarOpen
+              ? 'text-zinc-200 bg-white/[0.06]'
+              : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]'
+          }`}
+          title="Toggle Explorer Sidebar (Ctrl+B)"
+        >
+          <PanelLeft className="w-4 h-4" />
+        </button>
+
+        <div className="h-3.5 w-[1px] bg-white/[0.1] mx-0.5" />
 
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-slate-950 font-bold text-[11px] shadow-md shadow-sky-500/20">
-            IDE
+          <div className="w-5 h-5 rounded bg-zinc-800 border border-white/[0.1] flex items-center justify-center text-[10px] font-mono text-zinc-300">
+            &gt;_
           </div>
-          <span className="font-bold text-xs tracking-tight text-white">
-            Cloud<span className="text-sky-400">IDE</span>
+          <span className="font-medium text-xs text-zinc-200 tracking-tight">
+            CloudIDE
           </span>
         </div>
 
-        <div className="h-4 w-[1px] bg-white/[0.08]" />
+        <div className="h-3.5 w-[1px] bg-white/[0.1] mx-0.5" />
 
-        {/* Current Workspace Name & Language */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-white px-2.5 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.08]">
-            {workspace?.name || 'Workspace'}
-          </span>
-          <span className="text-[11px] text-slate-400 px-2 py-0.5 rounded-md bg-white/[0.02] border border-white/[0.05] hidden md:inline-flex items-center gap-1.5">
-            <Cpu className="w-3 h-3 text-sky-400" />
-            {languageLabel(workspace?.language)}
+        {/* Workspace Pill */}
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.06] text-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span className="font-mono text-[11px] text-zinc-300 truncate max-w-[140px]">
+            {workspace?.name || 'workspace'}
           </span>
         </div>
       </div>
 
-      {/* Center: Live Preview & File Controls */}
+      {/* Center: Live Preview & File Path */}
       <div className="flex items-center gap-2">
         {/* Live Browser Preview Toggle Button - ONLY shown when HTML file is detected */}
         {isHtmlDetected && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={togglePreview}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
               isPreviewOpen
-                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-                : 'bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.08]'
+                ? 'bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-sm'
+                : 'bg-zinc-800/80 text-zinc-300 hover:text-white hover:bg-zinc-700 border border-white/[0.08]'
             }`}
             title="Toggle Live Web Preview"
           >
             <Globe className="w-3.5 h-3.5 text-sky-400" />
-            <span className="hidden sm:inline">Preview</span>
+            <span>Preview</span>
             {isPreviewOpen && (
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse ml-0.5" />
             )}
@@ -118,70 +112,69 @@ export function TopBar() {
 
         {/* Active file indicator */}
         {activeFilePath && (
-          <span className="text-xs text-slate-400 hidden lg:inline-block max-w-[200px] truncate font-mono px-2 py-1 rounded bg-white/[0.02] border border-white/[0.05]">
+          <span className="text-[11px] text-zinc-400 hidden md:inline-block max-w-[220px] truncate font-mono px-2 py-0.5 rounded bg-white/[0.03] border border-white/[0.06]">
             {activeFilePath}
           </span>
         )}
       </div>
 
-      {/* Right: Autosave status & Panel Toggles */}
-      <div className="flex items-center gap-3">
+      {/* Right: Autosave status & Terminal Toggle */}
+      <div className="flex items-center gap-2">
         {/* Autosave Status Indicator */}
-        <div className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md bg-white/[0.03] border border-white/[0.06]">
+        <div className="flex items-center gap-1 text-[11px] text-zinc-400 px-2 py-0.5 rounded bg-white/[0.02] border border-white/[0.06]">
           <AnimatePresence mode="wait">
             {saveStatus === 'saved' && (
               <motion.div
                 key="saved"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5"
+                className="flex items-center gap-1.5 text-zinc-400"
               >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-slate-400 hidden sm:inline">Saved</span>
+                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                <span className="hidden sm:inline">Saved</span>
               </motion.div>
             )}
             {saveStatus === 'saving' && (
               <motion.div
                 key="saving"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5"
+                className="flex items-center gap-1.5 text-amber-300"
               >
-                <Clock className="w-3.5 h-3.5 text-amber-400 animate-spin" />
-                <span className="text-amber-300 hidden sm:inline">Saving...</span>
+                <Clock className="w-3 h-3 animate-spin" />
+                <span className="hidden sm:inline">Saving</span>
               </motion.div>
             )}
             {saveStatus === 'unsaved' && (
               <motion.div
                 key="unsaved"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5"
+                className="flex items-center gap-1.5 text-amber-400"
               >
-                <CircleDot className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                <span className="text-amber-400 hidden sm:inline">Unsaved</span>
+                <CircleDot className="w-3 h-3 animate-pulse" />
+                <span className="hidden sm:inline">Unsaved</span>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Bottom Panel Toggle */}
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+        {/* Terminal Toggle Button */}
+        <button
           onClick={toggleBottomPanel}
-          className={`p-1.5 rounded-lg border text-xs transition-colors flex items-center gap-1.5 ${
+          className={`px-2.5 py-1 rounded-md text-xs font-mono transition-colors flex items-center gap-1.5 border ${
             isBottomPanelOpen
-              ? 'bg-sky-500/15 border-sky-400/40 text-sky-400 shadow-sm'
-              : 'bg-white/[0.03] border-white/[0.06] text-slate-400 hover:text-white hover:bg-white/[0.05]'
+              ? 'bg-zinc-800 text-zinc-100 border-white/[0.12]'
+              : 'bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04] border-white/[0.06]'
           }`}
-          title="Toggle Terminal & Output Panel"
+          title="Toggle Bash Terminal (Ctrl+`)"
         >
-          <TerminalIcon className="w-4 h-4" />
-          <span className="hidden sm:inline text-xs font-mono">Terminal</span>
-        </motion.button>
+          <TerminalIcon className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Terminal</span>
+        </button>
       </div>
     </header>
   );

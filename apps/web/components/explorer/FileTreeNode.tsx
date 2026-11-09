@@ -88,16 +88,16 @@ export function FileTreeNode({ node, depth = 0 }: FileTreeNodeProps) {
     <div className="select-none text-xs">
       <div
         onClick={handleClick}
-        style={{ paddingLeft: `${depth * 12 + 8}px` }}
-        className={`group flex items-center justify-between py-1 pr-2 rounded cursor-pointer transition-colors ${
+        style={{ paddingLeft: `${depth * 12 + 6}px` }}
+        className={`group flex items-center justify-between py-1 pr-1.5 rounded-md cursor-pointer transition-colors ${
           isActive
-            ? 'bg-ide-active text-ide-accent font-medium'
-            : 'text-ide-text hover:bg-ide-subtle hover:text-white'
+            ? 'bg-white/[0.08] text-white font-medium'
+            : 'text-zinc-300 hover:bg-white/[0.04] hover:text-white'
         }`}
       >
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
           {isDirectory ? (
-            <span className="text-ide-muted hover:text-white">
+            <span className="text-zinc-500 hover:text-zinc-300">
               {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
             </span>
           ) : (
@@ -113,7 +113,7 @@ export function FileTreeNode({ node, depth = 0 }: FileTreeNodeProps) {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 autoFocus
-                className="bg-ide-panel border border-ide-accent rounded px-1 py-0.5 text-xs text-white focus:outline-none w-full"
+                className="bg-[#141418] border border-sky-500/60 rounded px-1.5 py-0.5 text-xs text-white focus:outline-none w-full font-mono"
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') handleCancelRename();
                 }}
@@ -121,12 +121,12 @@ export function FileTreeNode({ node, depth = 0 }: FileTreeNodeProps) {
               <button type="submit" className="text-emerald-400 hover:text-emerald-300 p-0.5">
                 <Check className="w-3 h-3" />
               </button>
-              <button type="button" onClick={handleCancelRename} className="text-rose-400 hover:text-rose-300 p-0.5">
+              <button type="button" onClick={handleCancelRename} className="text-zinc-500 hover:text-zinc-300 p-0.5">
                 <X className="w-3 h-3" />
               </button>
             </form>
           ) : (
-            <span className="truncate" title={node.name}>
+            <span className="truncate text-xs font-mono" title={node.name}>
               {node.name}
             </span>
           )}
@@ -134,17 +134,17 @@ export function FileTreeNode({ node, depth = 0 }: FileTreeNodeProps) {
 
         {/* Hover Actions */}
         {!isEditing && (
-          <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+          <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
             <button
               onClick={handleStartRename}
-              className="p-1 rounded hover:bg-ide-panel text-ide-muted hover:text-white"
+              className="p-1 rounded hover:bg-white/[0.08] text-zinc-400 hover:text-white"
               title="Rename"
             >
               <Pencil className="w-3 h-3" />
             </button>
             <button
               onClick={handleDelete}
-              className="p-1 rounded hover:bg-ide-panel text-ide-muted hover:text-rose-400"
+              className="p-1 rounded hover:bg-white/[0.08] text-zinc-400 hover:text-rose-400"
               title="Delete"
             >
               <Trash2 className="w-3 h-3" />

@@ -7,14 +7,14 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Terminal,
-  Play,
   ArrowRight,
-  Check,
-  Cpu,
-  Layers,
   Sparkles,
-  Server,
-  Zap,
+  Layers,
+  Code2,
+  Globe,
+  ShieldCheck,
+  Cpu,
+  Boxes,
 } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -33,12 +33,10 @@ export default function WelcomePage() {
   });
 
   useEffect(() => {
-    // Check if user previously logged in
     const saved = localStorage.getItem('cloudide_user');
     if (saved) {
       setUsername(saved);
     }
-
     api.getSystemStatus().then(setSystemStatus).catch(console.error);
   }, []);
 
@@ -59,151 +57,215 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070a] text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-sky-500/30 selection:text-white">
-      {/* 3D Three.js Interactive Particle Background */}
-      <HeroCanvas3D />
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col relative overflow-x-hidden selection:bg-sky-500/20 selection:text-sky-200">
+      {/* 3D Particle Canvas Background */}
+      <div className="opacity-60 pointer-events-none">
+        <HeroCanvas3D />
+      </div>
 
-      {/* Ambient gradient top illumination */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-b from-sky-500/15 via-indigo-500/10 to-transparent blur-3xl pointer-events-none -z-10" />
+      {/* Subtle Ambient Radial Lighting */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[500px] bg-gradient-to-b from-sky-500/10 via-indigo-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
-      {/* Top Navigation Bar */}
-      <header className="h-16 border-b border-white/[0.06] bg-[#070a0f]/60 backdrop-blur-xl px-6 md:px-12 flex items-center justify-between sticky top-0 z-40">
+      {/* Subtle Dot Grid */}
+      <div
+        className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none -z-10 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]"
+      />
+
+      {/* Top Navbar */}
+      <header className="h-14 border-b border-white/[0.08] bg-[#09090b]/80 backdrop-blur-md px-6 md:px-12 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 via-indigo-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-sky-500/25 group-hover:scale-105 transition-transform">
-              IDE
+            <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-white/[0.12] flex items-center justify-center text-white font-mono font-bold text-xs shadow-sm group-hover:border-sky-500/50 transition-colors">
+              <span className="text-sky-400 font-semibold">&gt;_</span>
             </div>
-            <span className="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
-              Cloud<span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">IDE</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-slate-400 font-normal">
-                Playground
+            <span className="font-semibold text-sm tracking-tight text-white flex items-center gap-1.5">
+              CloudIDE
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/[0.06] border border-white/[0.08] text-zinc-400 font-normal">
+                v2.0
               </span>
             </span>
           </Link>
         </div>
 
-        {/* Engine status indicator */}
+        {/* Status Pill */}
         <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-slate-300">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-zinc-300">
             <span
-              className={`w-2 h-2 rounded-full ${
-                systemStatus.dockerAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-sky-400 animate-pulse'
+              className={`w-1.5 h-1.5 rounded-full ${
+                systemStatus.dockerAvailable ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50' : 'bg-sky-400'
               }`}
             />
-            <span className="text-[11px] font-mono text-slate-400">
-              Container Runtime:{' '}
-              <strong className="text-white">
-                {systemStatus.dockerAvailable ? 'Docker Engine Ready' : 'Sandbox Ready'}
-              </strong>
+            <span className="text-[11px] font-mono text-zinc-400">
+              {systemStatus.dockerAvailable ? 'Docker Engine Connected' : 'Engine Ready'}
             </span>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-12 md:py-20 flex flex-col items-center justify-center gap-8 relative z-10 text-center">
-        {/* Shimmering Badge */}
+      {/* Main Hero Container */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-16 md:py-24 flex flex-col items-center justify-center gap-10 relative z-10 text-center">
+        {/* Pill Badge */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-xs font-medium text-slate-300 backdrop-blur-md shadow-inner"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-white/[0.1] text-[11px] font-medium text-zinc-300 backdrop-blur-md shadow-sm"
         >
-          <Sparkles className="w-3.5 h-3.5 text-sky-400 animate-spin-slow" />
-          <span>Cloud Developer Playground</span>
+          <Sparkles className="w-3 h-3 text-sky-400" />
+          <span>Next-Generation Cloud Developer Sandbox</span>
         </motion.div>
 
-        {/* Hero Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white max-w-2xl leading-[1.1]"
-        >
-          Your Instant, Isolated{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400">
-            Developer Sandbox
-          </span>
-        </motion.h1>
+        {/* Hero Title & Subtitle */}
+        <div className="flex flex-col items-center gap-4 max-w-3xl">
+          <motion.h1
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.1]"
+          >
+            Instant cloud playground <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 via-zinc-400 to-zinc-500">
+              for modern developers.
+            </span>
+          </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed"
-        >
-          Log in with your username to enter an empty playground with your dedicated container, real Bash terminal, and Monaco Editor. Install any packages and dependencies with full root permissions.
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-sm sm:text-base text-zinc-400 max-w-xl leading-relaxed"
+          >
+            Launch an isolated environment in seconds with root Bash terminal access, Monaco Editor, and instant live web preview.
+          </motion.p>
+        </div>
 
-        {/* Developer Login & Container Playground Launch Box */}
+        {/* Linear/Raycast Style Launch Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="w-full max-w-md p-6 rounded-2xl bg-[#0c1017]/90 border border-white/[0.1] shadow-2xl backdrop-blur-xl flex flex-col gap-4 text-left relative overflow-hidden"
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="w-full max-w-md p-5 rounded-2xl bg-[#0c0c0e]/95 border border-white/[0.1] shadow-2xl backdrop-blur-xl flex flex-col gap-4 text-left relative"
         >
-          {/* Ambient subtle glow */}
-          <div className="absolute top-0 right-0 w-48 h-48 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="flex items-center gap-2">
-            <Terminal className="w-4 h-4 text-sky-400" />
-            <h3 className="text-sm font-semibold text-white">Developer Access</h3>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
+              <Terminal className="w-3.5 h-3.5 text-zinc-400" />
+              Developer Login
+            </span>
+            <span className="text-[11px] text-zinc-500 font-mono">root / bash</span>
           </div>
 
           <form onSubmit={handleEnterPlayground} className="flex flex-col gap-3">
-            <div>
-              <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                Enter your developer handle / name
-              </label>
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 text-xs text-zinc-500 font-mono select-none">@</span>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. bolt, alex, dev"
+                placeholder="username"
                 required
-                className="w-full bg-[#05070a] border border-white/[0.1] focus:border-sky-400/60 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-colors font-mono"
+                className="w-full bg-[#141418] border border-white/[0.08] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 rounded-xl pl-8 pr-3.5 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-all font-mono"
               />
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+            <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 hover:from-sky-300 hover:to-indigo-400 text-slate-950 font-semibold text-xs shadow-lg shadow-sky-500/25 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-xs transition-colors shadow-sm cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  <span>Spinning Up Container...</span>
+                  <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <span>Preparing Environment...</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-3.5 h-3.5 fill-current" />
                   <span>Enter Playground</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
-            </motion.button>
+            </button>
           </form>
 
-          {/* Core Playground Highlights */}
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/[0.06] text-[11px] text-slate-400">
-            <div className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-sky-400" />
-              <span>Dedicated Container</span>
+          {/* Quick Specs */}
+          <div className="flex items-center justify-between pt-3 border-t border-white/[0.06] text-[11px] text-zinc-400">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
+              Isolated Sandbox
+            </span>
+            <span className="text-zinc-600">•</span>
+            <span className="flex items-center gap-1">
+              <Terminal className="w-3.5 h-3.5 text-zinc-500" />
+              Root Shell
+            </span>
+            <span className="text-zinc-600">•</span>
+            <span className="flex items-center gap-1">
+              <Globe className="w-3.5 h-3.5 text-zinc-500" />
+              HTML Preview
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Minimalist IDE Preview Mockup */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="w-full max-w-4xl mt-4 rounded-xl border border-white/[0.08] bg-[#0c0c0e] shadow-2xl overflow-hidden text-left font-mono"
+        >
+          {/* Mock Window Header */}
+          <div className="h-9 px-4 bg-[#121215] border-b border-white/[0.06] flex items-center justify-between text-xs text-zinc-400">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+              <span className="text-[11px] text-zinc-500 ml-2">cloudide · workspace</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Root Permissions</span>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="text-zinc-500">bash</span>
+              <span className="text-emerald-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> connected
+              </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-amber-400" />
-              <span>Bash Linux Shell</span>
+          </div>
+
+          {/* Mock Editor + Terminal split */}
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.06] text-xs">
+            {/* Explorer snippet */}
+            <div className="p-3 bg-[#0c0c0e] text-zinc-400 space-y-1.5 hidden md:block">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold mb-2">EXPLORER</div>
+              <div className="flex items-center gap-1.5 text-zinc-300">
+                <Code2 className="w-3.5 h-3.5 text-sky-400" />
+                <span>index.html</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-zinc-400">
+                <Code2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>app.js</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-zinc-500">
+                <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                <span>styles.css</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-purple-400" />
-              <span>Clean Empty Workspace</span>
+
+            {/* Code lines */}
+            <div className="p-4 bg-[#09090b] col-span-2 space-y-1 text-zinc-300 leading-relaxed overflow-x-auto">
+              <div className="flex items-center gap-4 text-zinc-600">
+                <span className="w-4 select-none">1</span>
+                <span className="text-zinc-200">&lt;<span className="text-sky-400">html</span> <span className="text-amber-400">lang</span>=<span className="text-emerald-400">&quot;en&quot;</span>&gt;</span>
+              </div>
+              <div className="flex items-center gap-4 text-zinc-600">
+                <span className="w-4 select-none">2</span>
+                <span className="text-zinc-200 pl-4">&lt;<span className="text-sky-400">h1</span>&gt;<span className="text-zinc-100">Hello from CloudIDE!</span>&lt;/<span className="text-sky-400">h1</span>&gt;</span>
+              </div>
+              <div className="flex items-center gap-4 text-zinc-600">
+                <span className="w-4 select-none">3</span>
+                <span className="text-zinc-200">&lt;/<span className="text-sky-400">html</span>&gt;</span>
+              </div>
+              <div className="mt-3 pt-3 border-t border-white/[0.06] text-[11px] text-zinc-400 flex items-center gap-2">
+                <span className="text-sky-400">cloudide:~#</span>
+                <span className="text-zinc-300">apk add nodejs python3</span>
+                <span className="w-2 h-3.5 bg-zinc-400 animate-pulse inline-block ml-1" />
+              </div>
             </div>
           </div>
         </motion.div>

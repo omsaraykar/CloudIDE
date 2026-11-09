@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
-import { Code2, Play, Sparkles } from 'lucide-react';
+import { Code2 } from 'lucide-react';
 
-// Dynamic import with SSR disabled for Monaco
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full bg-ide-panel flex items-center justify-center text-xs text-ide-muted">
-      Loading Monaco Editor...
+    <div className="h-full w-full bg-[#121215] flex items-center justify-center text-xs text-zinc-500 font-mono">
+      Loading Editor...
     </div>
   ),
 });
@@ -21,7 +20,6 @@ export function CodeEditor() {
     activeFilePath,
     updateFileContent,
     saveCurrentFile,
-    runCode,
   } = useWorkspaceStore();
 
   const editorRef = useRef<any>(null);
@@ -37,7 +35,7 @@ export function CodeEditor() {
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
 
-    // Define custom charcoal theme
+    // Define sleek modern obsidian theme
     monaco.editor.defineTheme('cloudide-dark', {
       base: 'vs-dark',
       inherit: true,
@@ -49,15 +47,15 @@ export function CodeEditor() {
         { token: 'identifier', foreground: 'f1f5f9' },
       ],
       colors: {
-        'editor.background': '#0f1319',
-        'editor.foreground': '#f1f5f9',
+        'editor.background': '#121215',
+        'editor.foreground': '#f4f4f5',
         'editorCursor.foreground': '#38bdf8',
-        'editor.lineHighlightBackground': '#181d26',
-        'editorLineNumber.foreground': '#475569',
-        'editorLineNumber.activeForeground': '#94a3b8',
-        'editor.selectionBackground': '#2563eb40',
-        'editorIndentGuide.background': '#1e293b',
-        'editorIndentGuide.activeBackground': '#334155',
+        'editor.lineHighlightBackground': '#18181c',
+        'editorLineNumber.foreground': '#52525b',
+        'editorLineNumber.activeForeground': '#e4e4e7',
+        'editor.selectionBackground': '#2563eb33',
+        'editorIndentGuide.background': '#1f1f23',
+        'editorIndentGuide.activeBackground': '#2e2e34',
       },
     });
 
@@ -67,58 +65,55 @@ export function CodeEditor() {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       saveCurrentFile();
     });
-
-    // Keybindings: Cmd+Enter or Ctrl+Enter to Run
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      runCode();
-    });
   };
 
   if (!activeFile) {
     return (
-      <div className="h-full w-full bg-ide-panel flex flex-col items-center justify-center p-6 text-center select-none">
-        <div className="w-12 h-12 rounded-xl bg-ide-subtle border border-ide-border flex items-center justify-center text-ide-accent mb-4 shadow-inner">
-          <Code2 className="w-6 h-6" />
+      <div className="h-full w-full bg-[#121215] flex flex-col items-center justify-center p-6 text-center select-none font-sans">
+        <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-zinc-400 mb-3 shadow-inner">
+          <Code2 className="w-5 h-5 text-zinc-300" />
         </div>
-        <h3 className="text-sm font-semibold text-ide-text mb-1">No File Open</h3>
-        <p className="text-xs text-ide-muted max-w-sm mb-4">
-          Select a file from the explorer on the left or create a new file to start coding.
+        <h3 className="text-xs font-semibold text-zinc-200 mb-1">No File Open</h3>
+        <p className="text-[11px] text-zinc-500 max-w-xs mb-4 leading-relaxed">
+          Select a file from the explorer on the left or create a new one to start writing code.
         </p>
-        <div className="flex items-center gap-2 text-[11px] text-ide-muted/80 bg-ide-surface px-3 py-1.5 rounded border border-ide-border">
-          <kbd className="px-1.5 py-0.5 rounded bg-ide-subtle text-ide-text font-mono border border-ide-border">Ctrl+Enter</kbd>
-          <span>to Run</span>
-          <span className="mx-1">•</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-ide-subtle text-ide-text font-mono border border-ide-border">Ctrl+S</kbd>
-          <span>to Save</span>
+        <div className="flex items-center gap-2 text-[10px] text-zinc-400 bg-white/[0.03] px-3 py-1.5 rounded-md border border-white/[0.06] font-mono">
+          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-200 border border-white/[0.08]">Ctrl+S</kbd>
+          <span>Save</span>
+          <span className="text-zinc-600">•</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-200 border border-white/[0.08]">Ctrl+`</kbd>
+          <span>Terminal</span>
+          <span className="text-zinc-600">•</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-200 border border-white/[0.08]">Ctrl+B</kbd>
+          <span>Sidebar</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full bg-[#0f1319] relative">
+    <div className="h-full w-full bg-[#121215] relative">
       <MonacoEditor
         height="100%"
-        language={activeFile.language || 'javascript'}
+        language={activeFile.language || 'plaintext'}
         value={activeFile.content}
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
-        theme="cloudide-dark"
         options={{
-          minimap: { enabled: true, maxColumn: 80 },
-          fontSize: 13.5,
-          fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace",
-          fontLigatures: true,
+          minimap: { enabled: false },
+          fontSize: 13,
+          fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace",
           lineNumbers: 'on',
+          lineHeight: 20,
           scrollBeyondLastLine: false,
           automaticLayout: true,
           tabSize: 2,
           wordWrap: 'on',
-          smoothScrolling: true,
+          renderLineHighlight: 'all',
           cursorBlinking: 'smooth',
           cursorSmoothCaretAnimation: 'on',
-          renderLineHighlight: 'all',
-          padding: { top: 10, bottom: 10 },
+          smoothScrolling: true,
+          padding: { top: 8, bottom: 8 },
         }}
       />
     </div>
