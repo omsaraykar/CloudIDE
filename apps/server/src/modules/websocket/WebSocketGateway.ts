@@ -61,6 +61,10 @@ export class WebSocketGateway {
           return;
         }
 
+        if (!workspace.containerId && this.workspaceManager.isDockerReady()) {
+          workspace.containerId = await this.workspaceManager.ensureContainer(workspace);
+        }
+
         try {
           const sessionId = await this.terminalService.createSession(
             workspace,
@@ -103,6 +107,10 @@ export class WebSocketGateway {
         // If code provided directly, save before running
         if (code !== undefined) {
           await this.fsService.writeFile(workspace.path, filePath, code);
+        }
+
+        if (!workspace.containerId && this.workspaceManager.isDockerReady()) {
+          workspace.containerId = await this.workspaceManager.ensureContainer(workspace);
         }
 
         const room = `workspace:${workspaceId}`;

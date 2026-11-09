@@ -22,6 +22,10 @@ export async function registerExecutionRoutes(
         return reply.status(400).send({ success: false, error: 'filePath is required' });
       }
 
+      if (!ws.containerId && workspaceManager.isDockerReady()) {
+        ws.containerId = await workspaceManager.ensureContainer(ws);
+      }
+
       const result = await executionEngine.execute(
         ws.id,
         ws.path,

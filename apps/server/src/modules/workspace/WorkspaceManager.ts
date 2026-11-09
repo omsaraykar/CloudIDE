@@ -18,6 +18,55 @@ export class WorkspaceManager {
     this.docker = this.executionEngine.getDockerInstance();
   }
 
+  public isDockerReady(): boolean {
+    return this.executionEngine.isDockerReady();
+  }
+
+  public async ensureContainer(ws: Workspace): Promise<string | null> {
+    if (!this.executionEngine.isDockerReady()) return null;
+
+    if (ws.containerId) {
+      try {
+        const container = this.docker.getContainer(ws.containerId);
+        const inspect = await container.inspect();
+        if (!inspect.State.Running) {
+          await container.start();
+        }
+        return ws.containerId;
+      } catch {
+        // Container may have been pruned or deleted, recreate below
+      }
+    }
+
+    try {
+      const container = (await this.docker.createContainer({
+        Image: CONFIG.DOCKER_DEFAULT_IMAGE,
+        name: `cloudide-${ws.id}`,
+        Tty: true,
+        OpenStdin: true,
+        WorkingDir: '/workspace',
+        User: 'node',
+        Cmd: ['tail', '-f', '/dev/null'],
+        HostConfig: {
+          Binds: [`${path.resolve(ws.path)}:/workspace:rw`],
+          Memory: CONFIG.MEMORY_LIMIT_BYTES,
+          NanoCpus: 500000000,
+          PidsLimit: 50,
+          NetworkMode: 'bridge',
+        },
+      })) as Docker.Container;
+
+      await container.start();
+      ws.containerId = container.id;
+      await db.saveWorkspace(ws);
+      console.log(`[WorkspaceManager] Docker container created & started: ${container.id} for workspace ${ws.id}`);
+      return container.id;
+    } catch (dockerErr) {
+      console.warn(`[WorkspaceManager] Failed to create Docker container:`, (dockerErr as Error).message);
+      return null;
+    }
+  }
+
   public async listWorkspaces(): Promise<Workspace[]> {
     return await db.getWorkspaces();
   }

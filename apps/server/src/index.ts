@@ -28,6 +28,7 @@ async function bootstrap() {
   // Instantiate Core Services
   const fsService = new FilesystemService();
   const executionEngine = new ExecutionEngine();
+  await executionEngine.checkDocker();
   const workspaceManager = new WorkspaceManager(fsService, executionEngine);
   const terminalService = new TerminalService(executionEngine);
 

@@ -18,7 +18,7 @@ export const CONFIG = {
   DOCKER_SOCKET: process.platform === 'win32' 
     ? '//./pipe/docker_engine' 
     : '/var/run/docker.sock',
-  DOCKER_DEFAULT_IMAGE: process.env.DOCKER_IMAGE || 'node:20-alpine',
+  DOCKER_DEFAULT_IMAGE: process.env.DOCKER_IMAGE || 'node:22-alpine',
   EXECUTION_TIMEOUT_MS: parseInt(process.env.EXECUTION_TIMEOUT_MS || '15000', 10),
   MEMORY_LIMIT_BYTES: 256 * 1024 * 1024, // 256MB
   CPU_QUOTA: 50000, // 50% CPU limit
