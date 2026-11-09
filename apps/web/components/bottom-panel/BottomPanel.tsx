@@ -15,6 +15,7 @@ import {
   Minimize2,
 } from 'lucide-react';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
+import { renderAnsi, stripAnsi } from '../../lib/ansi';
 
 const XtermTerminal = dynamic(
   () => import('../terminal/XtermTerminal').then((m) => m.XtermTerminal),
@@ -54,7 +55,7 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
   }, [outputLogs, activeBottomTab]);
 
   const handleCopy = () => {
-    const text = outputLogs.map((l) => l.text).join('');
+    const text = stripAnsi(outputLogs.map((l) => l.text).join(''));
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -175,7 +176,11 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
         {activeBottomTab === 'output' && (
           <div
             ref={outputContainerRef}
-            className="h-full w-full p-3.5 font-mono text-xs overflow-y-auto whitespace-pre-wrap select-text leading-relaxed text-slate-200"
+            style={{
+              fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace",
+              fontVariantLigatures: 'none',
+            }}
+            className="h-full w-full p-3.5 text-xs overflow-y-auto whitespace-pre select-text leading-snug text-slate-200"
           >
             {outputLogs.length === 0 ? (
               <div className="text-slate-500 italic text-center py-8 select-none font-sans">
@@ -193,7 +198,7 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
                 }
                 return (
                   <span key={log.id} className={colorClass}>
-                    {log.text}
+                    {renderAnsi(log.text)}
                   </span>
                 );
               })
