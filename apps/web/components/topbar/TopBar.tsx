@@ -4,8 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Play,
-  Square,
   CheckCircle2,
   Clock,
   CircleDot,
@@ -24,9 +22,6 @@ export function TopBar() {
     openFiles,
     activeFilePath,
     saveStatus,
-    isRunning,
-    runCode,
-    stopCode,
     toggleBottomPanel,
     isBottomPanelOpen,
     isPreviewOpen,
@@ -41,14 +36,6 @@ export function TopBar() {
     );
   };
   const isHtmlDetected = isHtmlActive || hasOpenHtml || checkTreeHtml(fileTree);
-
-  const handleRun = () => {
-    runCode();
-  };
-
-  const handleStop = () => {
-    stopCode();
-  };
 
   const languageLabel = (lang?: string) => {
     switch (lang) {
@@ -103,51 +90,8 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Center: Execution & Save Controls */}
+      {/* Center: Live Preview & File Controls */}
       <div className="flex items-center gap-2">
-        {/* Run Button */}
-        <motion.button
-          whileHover={!isRunning && activeFilePath ? { scale: 1.04 } : {}}
-          whileTap={!isRunning && activeFilePath ? { scale: 0.96 } : {}}
-          onClick={handleRun}
-          disabled={isRunning || !activeFilePath}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all relative overflow-hidden ${
-            isRunning
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 cursor-wait shadow-sm shadow-emerald-500/20'
-              : !activeFilePath
-              ? 'bg-white/[0.03] text-slate-500 border border-white/[0.05] cursor-not-allowed'
-              : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/60 cursor-pointer active:scale-95'
-          }`}
-          title={activeFilePath ? `Run ${activeFilePath} (Ctrl+Enter)` : 'Open a file to run'}
-        >
-          <Play className={`w-3.5 h-3.5 fill-current ${isRunning ? 'animate-pulse' : ''}`} />
-          <span>{isRunning ? 'Running...' : 'Run'}</span>
-          {isRunning && (
-            <motion.div
-              layoutId="running-glow"
-              className="absolute inset-0 bg-emerald-400/10 pointer-events-none"
-              animate={{ opacity: [0.3, 0.7, 0.3] }}
-              transition={{ repeat: Infinity, duration: 1.2 }}
-            />
-          )}
-        </motion.button>
-
-        {/* Stop Button */}
-        <motion.button
-          whileTap={isRunning ? { scale: 0.95 } : {}}
-          onClick={handleStop}
-          disabled={!isRunning}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            isRunning
-              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30'
-              : 'bg-white/[0.02] text-slate-600 border border-transparent cursor-not-allowed'
-          }`}
-          title="Stop execution"
-        >
-          <Square className="w-3.5 h-3.5 fill-current" />
-          <span className="hidden sm:inline">Stop</span>
-        </motion.button>
-
         {/* Live Browser Preview Toggle Button - ONLY shown when HTML file is detected */}
         {isHtmlDetected && (
           <motion.button
@@ -157,7 +101,7 @@ export function TopBar() {
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             onClick={togglePreview}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
               isPreviewOpen
                 ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
                 : 'bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.08]'
@@ -174,7 +118,7 @@ export function TopBar() {
 
         {/* Active file indicator */}
         {activeFilePath && (
-          <span className="text-xs text-slate-400 hidden lg:inline-block max-w-[160px] truncate font-mono">
+          <span className="text-xs text-slate-400 hidden lg:inline-block max-w-[200px] truncate font-mono px-2 py-1 rounded bg-white/[0.02] border border-white/[0.05]">
             {activeFilePath}
           </span>
         )}
