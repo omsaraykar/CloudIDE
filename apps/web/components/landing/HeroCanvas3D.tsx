@@ -23,8 +23,8 @@ export function HeroCanvas3D() {
     const getWidth = () => container.clientWidth || window.innerWidth;
     const getHeight = () => container.clientHeight || window.innerHeight;
 
-    const camera = new THREE.PerspectiveCamera(42, getWidth() / getHeight(), 0.1, 100);
-    camera.position.set(0, 0.1, 9.2);
+    const camera = new THREE.PerspectiveCamera(40, getWidth() / getHeight(), 0.1, 100);
+    camera.position.set(0, 0.0, 9.2);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -37,176 +37,213 @@ export function HeroCanvas3D() {
     renderer.toneMappingExposure = 1.35;
     container.appendChild(renderer.domElement);
 
-    // 2. Cinematic Lighting Setup (Soft Violet Satin & Indigo Rim, matching reference)
-    const ambientLight = new THREE.AmbientLight(0x1a0f2e, 1.8);
+    // 2. Cinematic Lighting Setup (Soft Rim Lights Behind Model, Zero Front Blowout)
+    const ambientLight = new THREE.AmbientLight(0x0c0517, 1.2);
     scene.add(ambientLight);
 
-    // Top-left purple key light (soft crease illumination)
-    const keyLight = new THREE.DirectionalLight(0xc084fc, 3.8);
-    keyLight.position.set(-5, 6, 4.5);
-    scene.add(keyLight);
+    // Behind top-left lavender rim light (illuminates top-left edge curves)
+    const keyRimLeft = new THREE.DirectionalLight(0xc084fc, 3.8);
+    keyRimLeft.position.set(-8, 6.0, -4.0);
+    scene.add(keyRimLeft);
 
-    // Top-right indigo rim light (crisp silhouette)
-    const rimLightRight = new THREE.DirectionalLight(0x818cf8, 3.2);
-    rimLightRight.position.set(6, 4.5, -2);
-    scene.add(rimLightRight);
+    // Behind top-right indigo rim light (crisp blue edge highlight)
+    const keyRimRight = new THREE.DirectionalLight(0x818cf8, 3.2);
+    keyRimRight.position.set(8, 5.0, -4.0);
+    scene.add(keyRimRight);
 
-    // Left purple rim light
-    const rimLightLeft = new THREE.DirectionalLight(0xa855f7, 2.8);
-    rimLightLeft.position.set(-6, 3.5, -2.5);
-    scene.add(rimLightLeft);
+    // Gentle back rim light (softly rims crest silhouette)
+    const backRimLight = new THREE.DirectionalLight(0xa855f7, 2.4);
+    backRimLight.position.set(0, 8.0, -6.0);
+    scene.add(backRimLight);
 
-    // Front-bottom fill light (illuminates lower curves)
-    const fillLight = new THREE.PointLight(0x7c3aed, 2.2, 20);
-    fillLight.position.set(0, -3.5, 4.5);
-    scene.add(fillLight);
+    // Soft underside fill (gentle deep purple illumination)
+    const bottomFill = new THREE.PointLight(0x3b0764, 1.5, 20);
+    bottomFill.position.set(0, -5.5, 3.0);
+    scene.add(bottomFill);
 
-    // 3. Central 3D Organic Liquid Model (Three.js)
-    const sphereGeo = register(new THREE.SphereGeometry(3.9, 160, 160));
+    // 3. Custom Sculptural Arch & Silk Ribbon Geometry
+    function createSculpturalWaveGeometry(
+      width: number,
+      depth: number,
+      uSegments: number,
+      vSegments: number,
+      layerOffset: number = 0
+    ) {
+      const geo = new THREE.BufferGeometry();
+      const positions: number[] = [];
+      const uvs: number[] = [];
+      const indices: number[] = [];
 
+      for (let j = 0; j <= vSegments; j++) {
+        const v = j / vSegments; // 0 (front edge) to 1 (back edge)
+        for (let i = 0; i <= uSegments; i++) {
+          const u = i / uSegments; // 0 (left) to 1 (right)
+          const s = (u - 0.5) * 2; // -1 to +1 normalized horizontal
+
+          // Width span across screen
+          const x = s * (width * 0.5);
+
+          // Wide flowing arch: peaks in center, sweeps down gracefully at sides
+          const archShape = 2.45 * (1.0 - Math.pow(Math.abs(s), 2.15) * 0.68);
+
+          // Smooth harmonic undulating wave (no random bumps or noise)
+          const harmonicWave =
+            Math.cos(s * Math.PI * 1.25) * 0.38 +
+            Math.sin(s * Math.PI * 0.7) * 0.22;
+
+          // Depth rollout: curves gently forward in center and rolls backward
+          const zDepth = (v - 0.5) * depth - (1.0 - s * s * 0.4) * 1.5;
+
+          // Smooth crest rollover: drops off smoothly into the bottom viewport
+          const crestRoll = Math.sin(v * Math.PI * 0.8) * 0.65 - Math.pow(v, 2.1) * 2.1;
+
+          // Secondary layer variation
+          const layerShift = layerOffset !== 0 ? Math.sin(s * 2.5) * 0.25 + layerOffset : 0;
+
+          const y = archShape + harmonicWave + crestRoll + layerShift;
+
+          positions.push(x, y, zDepth);
+          uvs.push(u, v);
+        }
+      }
+
+      const rowSize = uSegments + 1;
+      for (let j = 0; j < vSegments; j++) {
+        for (let i = 0; i < uSegments; i++) {
+          const a = j * rowSize + i;
+          const b = (j + 1) * rowSize + i;
+          const c = (j + 1) * rowSize + (i + 1);
+          const d = j * rowSize + (i + 1);
+
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geo.setIndex(indices);
+      geo.computeVertexNormals();
+
+      return register(geo);
+    }
+
+    // Custom uniforms for gentle living movement
     const customUniforms = {
       uTime: { value: 0 },
-      uNoiseFreq: { value: 0.38 },
-      uNoiseSpeed: { value: 0.26 },
-      uDisplacement: { value: 0.58 },
     };
 
-    const blobMat = register(
-      new THREE.MeshPhysicalMaterial({
-        color: 0x241242, // Rich dark satin violet
-        emissive: 0x140826, // Subtle internal purple glow
-        emissiveIntensity: 0.45,
-        roughness: 0.56, // Satin / velvet matte finish
-        metalness: 0.10,
-        clearcoat: 0.25, // Gentle sheen
-        clearcoatRoughness: 0.35,
-      })
-    );
-
-    // Custom Simplex noise displacement shader hook
-    blobMat.onBeforeCompile = (shader) => {
-      shader.uniforms.uTime = customUniforms.uTime;
-      shader.uniforms.uNoiseFreq = customUniforms.uNoiseFreq;
-      shader.uniforms.uNoiseSpeed = customUniforms.uNoiseSpeed;
-      shader.uniforms.uDisplacement = customUniforms.uDisplacement;
-
-      shader.vertexShader = `
-        uniform float uTime;
-        uniform float uNoiseFreq;
-        uniform float uNoiseSpeed;
-        uniform float uDisplacement;
-
-        // 3D Simplex noise
-        vec4 permute(vec4 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-
-        float snoise(vec3 v) {
-          const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-          const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-          vec3 i = floor(v + dot(v, C.yyy));
-          vec3 x0 = v - i + dot(i, C.xxx);
-          vec3 g = step(x0.yzx, x0.xyz);
-          vec3 l = 1.0 - g;
-          vec3 i1 = min(g.xyz, l.zxy);
-          vec3 i2 = max(g.xyz, l.zxy);
-          vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-          vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-          vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
-          i = mod(i, 289.0);
-          vec4 p = permute(permute(permute(
-                     i.z + vec4(0.0, i1.z, i2.z, 1.0))
-                   + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-                   + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-          float n_ = 0.142857142857;
-          vec3 ns = n_ * D.wyz - D.xzx;
-          vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-          vec4 x_ = floor(j * ns.z);
-          vec4 y_ = floor(j - 7.0 * x_);
-          vec4 x = x_ *ns.x + ns.yyyy;
-          vec4 y = y_ *ns.x + ns.yyyy;
-          vec4 h = 1.0 - abs(x) - abs(y);
-          vec4 b0 = vec4(x.xy, y.xy);
-          vec4 b1 = vec4(x.zw, y.zw);
-          vec4 s0 = floor(b0)*2.0 + 1.0;
-          vec4 s1 = floor(b1)*2.0 + 1.0;
-          vec4 sh = -step(h, vec4(0.0));
-          vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-          vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-          vec3 p0 = vec3(a0.xy, h.x);
-          vec3 p1 = vec3(a0.zw, h.y);
-          vec3 p2 = vec3(a1.xy, h.z);
-          vec3 p3 = vec3(a1.zw, h.w);
-          vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-          p0 *= norm.x;
-          p1 *= norm.y;
-          p2 *= norm.z;
-          p3 *= norm.w;
-          vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-          m = m * m;
-          return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-        }
-
-        float getDisplacement(vec3 p) {
-          float t = uTime * uNoiseSpeed;
-          float n1 = snoise(p * uNoiseFreq + vec3(0.0, t * 0.7, t * 0.5)) * 0.65;
-          float n2 = snoise(p * (uNoiseFreq * 2.2) - vec3(t * 0.6, 0.0, t * 0.4)) * 0.35;
-          return (n1 + n2) * uDisplacement;
-        }
-      ` + shader.vertexShader;
-
-      shader.vertexShader = shader.vertexShader.replace(
-        '#include <defaultnormal_vertex>',
-        `
-        // Compute displacement & analytical normals with orthogonal tangent basis
-        vec3 tNormal = normal;
-        vec3 tangent = normalize(abs(tNormal.y) < 0.999 ? cross(tNormal, vec3(0.0, 1.0, 0.0)) : cross(tNormal, vec3(1.0, 0.0, 0.0)));
-        vec3 bitangent = cross(tNormal, tangent);
-        float eps = 0.02;
-
-        vec3 p0 = position + tNormal * getDisplacement(position);
-        vec3 p1 = position + tangent * eps + tNormal * getDisplacement(position + tangent * eps);
-        vec3 p2 = position + bitangent * eps + tNormal * getDisplacement(position + bitangent * eps);
-
-        vec3 computedNormal = normalize(cross(p1 - p0, p2 - p0));
-        vec3 transformedNormal = computedNormal;
-        #ifdef USE_TANGENT
-          vec3 transformedTangent = objectTangent;
-        #endif
-        `
+    // Material with custom Fresnel edge glow (dark center, illuminated lavender/blue edges)
+    const createSculpturalMaterial = (baseColor: number, roughness: number) => {
+      const mat = register(
+        new THREE.MeshPhysicalMaterial({
+          color: baseColor,
+          emissive: 0x05020a,
+          emissiveIntensity: 0.25,
+          roughness: roughness, // Satin sheen
+          metalness: 0.08, // Subtle reflections, avoid excessive metallic shine
+          clearcoat: 0.45,
+          clearcoatRoughness: 0.35,
+          side: THREE.DoubleSide,
+        })
       );
 
-      shader.vertexShader = shader.vertexShader.replace(
-        '#include <begin_vertex>',
-        `
-        vec3 transformed = p0;
-        `
-      );
+      mat.onBeforeCompile = (shader) => {
+        shader.uniforms.uTime = customUniforms.uTime;
+
+        // Subtle gentle vertex undulation
+        shader.vertexShader = `
+          uniform float uTime;
+          varying vec3 vWorldNormal;
+          varying vec3 vViewPos;
+        ` + shader.vertexShader;
+
+        shader.vertexShader = shader.vertexShader.replace(
+          '#include <begin_vertex>',
+          `
+          #include <begin_vertex>
+          // Gentle smooth breathing wave
+          float gentleWave = sin(position.x * 0.38 + uTime * 0.35) * cos(position.z * 0.42 + uTime * 0.28) * 0.08;
+          transformed.y += gentleWave;
+          `
+        );
+
+        shader.vertexShader = shader.vertexShader.replace(
+          '#include <worldpos_vertex>',
+          `
+          #include <worldpos_vertex>
+          vWorldNormal = normalize(mat3(modelMatrix) * normal);
+          vViewPos = - (modelViewMatrix * vec4(transformed, 1.0)).xyz;
+          `
+        );
+
+        // Inject Fresnel edge glow into fragment shader
+        shader.fragmentShader = `
+          varying vec3 vWorldNormal;
+          varying vec3 vViewPos;
+        ` + shader.fragmentShader;
+
+        shader.fragmentShader = shader.fragmentShader.replace(
+          '#include <dithering_fragment>',
+          `
+          #include <dithering_fragment>
+          // Elegant Fresnel glow on curved edges and silhouettes (dark center, illuminated purple curves)
+          vec3 viewD = normalize(vViewPos);
+          vec3 normD = normalize(vWorldNormal);
+          float fresnel = pow(1.0 - abs(dot(viewD, normD)), 3.2);
+
+          // Soft lavender-purple & subtle blue edge rim gradient
+          vec3 lavender = vec3(0.72, 0.48, 0.96); // Soft lavender-purple
+          vec3 softBlue = vec3(0.42, 0.58, 0.94); // Subtle blue highlight
+          vec3 edgeGlow = mix(lavender, softBlue, clamp((normD.x + 1.0) * 0.5, 0.0, 1.0));
+
+          gl_FragColor.rgb += edgeGlow * (fresnel * 1.35);
+          `
+        );
+      };
+
+      return mat;
     };
 
-    const blobMesh = new THREE.Mesh(sphereGeo, blobMat);
-    // Position blob so upper organic crest rises from bottom center, peaking just below CTA
-    blobMesh.position.set(0, -4.1, 0.4);
-    blobMesh.scale.set(1.4, 1.05, 1.25);
-    scene.add(blobMesh);
+    // Main 3D Group
+    const modelGroup = new THREE.Group();
+
+    // 1. Primary Sculptural Arch (Wide, smooth, rising behind hero and extending beyond bottom)
+    const primaryGeo = createSculpturalWaveGeometry(16.8, 5.8, 180, 120, 0);
+    const primaryMat = createSculpturalMaterial(0x07040f, 0.52); // Deep obsidian indigo
+    const primaryMesh = new THREE.Mesh(primaryGeo, primaryMat);
+    primaryMesh.position.set(0, -5.05, 0.8);
+    modelGroup.add(primaryMesh);
+
+    // 2. Secondary Flowing Ribbon Layer (Layered behind for sophisticated depth)
+    const secondaryGeo = createSculpturalWaveGeometry(15.2, 4.8, 150, 100, 0.35);
+    const secondaryMat = createSculpturalMaterial(0x06030c, 0.56);
+    const secondaryMesh = new THREE.Mesh(secondaryGeo, secondaryMat);
+    secondaryMesh.position.set(0.3, -4.75, -0.6);
+    secondaryMesh.rotation.y = 0.04;
+    secondaryMesh.rotation.z = -0.015;
+    modelGroup.add(secondaryMesh);
+
+    scene.add(modelGroup);
 
     // 4. Subtle Ambient Cosmic Dust / Starfield
-    const starCount = 260;
+    const starCount = 280;
     const starGeo = register(new THREE.BufferGeometry());
     const starPositions = new Float32Array(starCount * 3);
 
     for (let i = 0; i < starCount; i++) {
-      starPositions[i * 3] = (Math.random() - 0.5) * 24;
+      starPositions[i * 3] = (Math.random() - 0.5) * 26;
       starPositions[i * 3 + 1] = (Math.random() - 0.5) * 16;
-      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 14 - 1.0;
+      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 14 - 2.0;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
 
     const starMat = register(
       new THREE.PointsMaterial({
-        size: 0.04,
-        color: 0xe0e7ff,
+        size: 0.035,
+        color: 0xddd6fe,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.5,
       })
     );
     const starMesh = new THREE.Points(starGeo, starMat);
@@ -232,7 +269,7 @@ export function HeroCanvas3D() {
 
     // 6. Smooth Animation Loop
     let animationFrameId: number;
-    let startTime = performance.now();
+    const startTime = performance.now();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -240,21 +277,22 @@ export function HeroCanvas3D() {
       const elapsed = (performance.now() - startTime) * 0.001;
       customUniforms.uTime.value = elapsed;
 
-      // Mouse tracking with inertia
-      mouse.currentX += (mouse.targetX - mouse.currentX) * 0.04;
-      mouse.currentY += (mouse.targetY - mouse.currentY) * 0.04;
+      // Mouse tracking with smooth inertia
+      mouse.currentX += (mouse.targetX - mouse.currentX) * 0.035;
+      mouse.currentY += (mouse.targetY - mouse.currentY) * 0.035;
 
-      // Camera parallax
-      camera.position.x = mouse.currentX * 0.6;
-      camera.position.y = 0.3 + mouse.currentY * 0.35;
-      camera.lookAt(0, -0.4, 0);
+      // Subtle, elegant floating movement
+      modelGroup.position.y = Math.sin(elapsed * 0.35) * 0.05;
+      modelGroup.rotation.y = Math.sin(elapsed * 0.18) * 0.02 + mouse.currentX * 0.12;
+      modelGroup.rotation.x = mouse.currentY * 0.08;
 
-      // Model rotation
-      blobMesh.rotation.y = elapsed * 0.07 + mouse.currentX * 0.25;
-      blobMesh.rotation.x = mouse.currentY * 0.18;
+      // Subtle camera parallax
+      camera.position.x = mouse.currentX * 0.45;
+      camera.position.y = mouse.currentY * 0.25;
+      camera.lookAt(0, -0.3, 0);
 
       // Gentle starfield drift
-      starMesh.rotation.y = elapsed * 0.01;
+      starMesh.rotation.y = elapsed * 0.008;
 
       renderer.render(scene, camera);
     };
