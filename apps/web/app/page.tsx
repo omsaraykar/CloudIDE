@@ -111,8 +111,6 @@ export default function WelcomePage() {
         >
           <Sparkles className="w-3.5 h-3.5 text-sky-400 animate-spin-slow" />
           <span>Cloud Developer Playground</span>
-          <span className="w-1 h-1 rounded-full bg-white/20" />
-          <span className="text-sky-400 font-semibold">1 Dedicated Linux Container</span>
         </motion.div>
 
         {/* Hero Headline */}
@@ -147,14 +145,9 @@ export default function WelcomePage() {
           {/* Ambient subtle glow */}
           <div className="absolute top-0 right-0 w-48 h-48 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-sky-400" />
-              <h3 className="text-sm font-semibold text-white">Developer Access</h3>
-            </div>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              1 User = 1 Container
-            </span>
+          <div className="flex items-center gap-2">
+            <Terminal className="w-4 h-4 text-sky-400" />
+            <h3 className="text-sm font-semibold text-white">Developer Access</h3>
           </div>
 
           <form onSubmit={handleEnterPlayground} className="flex flex-col gap-3">
