@@ -104,7 +104,7 @@ export default function WelcomePage() {
           </button>
           <button
             onClick={() => handleEnterPlayground()}
-            className="text-xs font-medium text-white px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 shadow-lg shadow-purple-500/25 transition-all hover:scale-[1.02] active:scale-95"
+            className="text-xs font-semibold text-zinc-950 px-5 py-2 rounded-full bg-white hover:bg-zinc-100 shadow-sm transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
           >
             Sign up
           </button>
