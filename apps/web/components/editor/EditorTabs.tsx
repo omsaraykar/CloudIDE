@@ -54,28 +54,17 @@ export function EditorTabs() {
                   {file.name}
                 </span>
 
-                {/* Dirty or Close indicator */}
-                <div className="flex items-center ml-1">
-                  {file.isDirty ? (
-                    <div
-                      className="w-1.5 h-1.5 rounded-full bg-sky-400 group-hover:hidden"
-                      title="Unsaved changes"
-                    />
-                  ) : null}
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      closeFile(file.path);
-                    }}
-                    className={`p-0.5 rounded hover:bg-white/[0.1] text-zinc-400 hover:text-white ${
-                      file.isDirty ? 'hidden group-hover:block' : 'opacity-0 group-hover:opacity-100'
-                    }`}
-                    title="Close Tab"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
+                {/* Close Tab Button (Always clean, no dirty dot) */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeFile(file.path);
+                  }}
+                  className="p-0.5 ml-1 rounded hover:bg-white/[0.1] text-zinc-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Close Tab"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </motion.div>
             );
           })}
