@@ -21,6 +21,10 @@ export class TerminalService {
     this.docker = this.executionEngine.getDockerInstance();
   }
 
+  public getSessions(): Map<string, TerminalSession> {
+    return this.sessions;
+  }
+
   public async createSession(
     workspace: Workspace,
     cols = 80,
@@ -39,7 +43,12 @@ export class TerminalService {
           AttachStdout: true,
           AttachStderr: true,
           Tty: true,
-          Cmd: ['/bin/sh'],
+          Cmd: ['/bin/bash'],
+          Env: [
+            'TERM=xterm-256color',
+            'COLORTERM=truecolor',
+            'PS1=\\[\\033[1;36m\\]cloudide\\[\\033[0m\\]:\\[\\033[1;32m\\]\\w\\[\\033[0m\\]# ',
+          ],
         });
 
         const stream = await exec.start({
@@ -66,7 +75,10 @@ export class TerminalService {
         });
 
         // Send welcoming banner
-        onData(sessionId, `\x1b[1;36mConnected to Docker container for ${workspace.name}\x1b[0m\r\n/workspace $ `);
+        onData(
+          sessionId,
+          `\x1b[1;36m🚀 CloudIDE Container Terminal [${workspace.name}]\x1b[0m\r\n\x1b[90mLinux bash shell active with full root access (apk, npm, pip, git ready).\x1b[0m\r\n`
+        );
         return sessionId;
       } catch (err) {
         console.warn(`[TerminalService] Docker TTY attach failed, falling back to local shell:`, err);

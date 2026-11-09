@@ -18,8 +18,8 @@ export const CONFIG = {
   DOCKER_SOCKET: process.platform === 'win32' 
     ? '//./pipe/docker_engine' 
     : '/var/run/docker.sock',
-  DOCKER_DEFAULT_IMAGE: process.env.DOCKER_IMAGE || 'node:22-alpine',
-  EXECUTION_TIMEOUT_MS: parseInt(process.env.EXECUTION_TIMEOUT_MS || '15000', 10),
-  MEMORY_LIMIT_BYTES: 256 * 1024 * 1024, // 256MB
+  DOCKER_DEFAULT_IMAGE: process.env.DOCKER_IMAGE || 'cloudide-developer:latest',
+  EXECUTION_TIMEOUT_MS: parseInt(process.env.EXECUTION_TIMEOUT_MS || '30000', 10),
+  MEMORY_LIMIT_BYTES: 1024 * 1024 * 1024, // 1GB memory for full dev container
   CPU_QUOTA: 50000, // 50% CPU limit
 };

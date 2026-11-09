@@ -12,6 +12,13 @@ export async function registerWorkspaceRoutes(
   app: FastifyInstance,
   workspaceManager: WorkspaceManager
 ) {
+  // Enter User Playground (1 dedicated container per logged-in user, clean empty workspace)
+  app.post<{ Body: { username?: string } }>('/api/playground/enter', async (req, reply) => {
+    const rawUser = req.body?.username || 'developer';
+    const ws = await workspaceManager.getOrCreateUserWorkspace(rawUser);
+    return reply.send({ success: true, data: ws });
+  });
+
   // List workspaces
   app.get('/api/workspaces', async (req, reply) => {
     const list = await workspaceManager.listWorkspaces();

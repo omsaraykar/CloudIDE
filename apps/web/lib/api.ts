@@ -8,6 +8,18 @@ import type {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export const api = {
+  // Playground Enter (Single Dedicated Container per User)
+  async enterPlayground(username: string): Promise<Workspace> {
+    const res = await fetch(`${API_BASE}/api/playground/enter`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'Failed to enter playground');
+    return json.data;
+  },
+
   // Workspaces
   async getWorkspaces(): Promise<Workspace[]> {
     const res = await fetch(`${API_BASE}/api/workspaces`);

@@ -20,6 +20,8 @@ import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 export function TopBar() {
   const {
     workspace,
+    fileTree,
+    openFiles,
     activeFilePath,
     saveStatus,
     isRunning,
@@ -30,6 +32,15 @@ export function TopBar() {
     isPreviewOpen,
     togglePreview,
   } = useWorkspaceStore();
+
+  const isHtmlActive = Boolean(activeFilePath?.endsWith('.html') || activeFilePath?.endsWith('.htm'));
+  const hasOpenHtml = openFiles.some((f) => f.path.endsWith('.html') || f.path.endsWith('.htm'));
+  const checkTreeHtml = (nodes: any[]): boolean => {
+    return nodes.some(
+      (n) => n.path?.endsWith('.html') || n.path?.endsWith('.htm') || (n.children && checkTreeHtml(n.children))
+    );
+  };
+  const isHtmlDetected = isHtmlActive || hasOpenHtml || checkTreeHtml(fileTree);
 
   const handleRun = () => {
     runCode();
@@ -137,24 +148,29 @@ export function TopBar() {
           <span className="hidden sm:inline">Stop</span>
         </motion.button>
 
-        {/* Live Browser Preview Toggle Button */}
-        <motion.button
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.96 }}
-          onClick={togglePreview}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-            isPreviewOpen
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-              : 'bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.08]'
-          }`}
-          title="Toggle Live Web Preview"
-        >
-          <Globe className="w-3.5 h-3.5 text-sky-400" />
-          <span className="hidden sm:inline">Preview</span>
-          {isPreviewOpen && (
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse ml-0.5" />
-          )}
-        </motion.button>
+        {/* Live Browser Preview Toggle Button - ONLY shown when HTML file is detected */}
+        {isHtmlDetected && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={togglePreview}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              isPreviewOpen
+                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
+                : 'bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.08]'
+            }`}
+            title="Toggle Live Web Preview"
+          >
+            <Globe className="w-3.5 h-3.5 text-sky-400" />
+            <span className="hidden sm:inline">Preview</span>
+            {isPreviewOpen && (
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse ml-0.5" />
+            )}
+          </motion.button>
+        )}
 
         {/* Active file indicator */}
         {activeFilePath && (

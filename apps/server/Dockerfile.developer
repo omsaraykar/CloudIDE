@@ -1,0 +1,23 @@
+FROM node:22-alpine
+
+# Install bash, curl, git, python3, pip, make, g++, etc. for full developer experience
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    python3 \
+    py3-pip \
+    make \
+    gcc \
+    g++ \
+    nano \
+    sudo
+
+# Set up working directory
+WORKDIR /workspace
+
+# Set default shell to bash
+ENV SHELL=/bin/bash
+ENV TERM=xterm-256color
+
+CMD ["tail", "-f", "/dev/null"]

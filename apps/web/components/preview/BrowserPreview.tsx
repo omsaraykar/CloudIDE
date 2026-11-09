@@ -6,11 +6,7 @@ import {
   ExternalLink,
   X,
   Monitor,
-  Tablet,
-  Smartphone,
-  Globe,
   Lock,
-  FileCode,
 } from 'lucide-react';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 
@@ -22,10 +18,8 @@ export function BrowserPreview() {
     refreshPreview,
     setPreviewPath,
     togglePreview,
-    createNode,
   } = useWorkspaceStore();
 
-  const [deviceMode, setDeviceMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [isRotating, setIsRotating] = useState(false);
   const [inputUrl, setInputUrl] = useState(previewPath);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -48,96 +42,6 @@ export function BrowserPreview() {
     let cleaned = inputUrl.trim();
     if (cleaned.startsWith('/')) cleaned = cleaned.slice(1);
     setPreviewPath(cleaned || 'index.html');
-  };
-
-  const getDeviceWidth = () => {
-    switch (deviceMode) {
-      case 'mobile':
-        return 'w-[375px] h-[92%] shadow-2xl rounded-2xl border border-white/10 my-auto';
-      case 'tablet':
-        return 'w-[768px] h-[95%] shadow-2xl rounded-xl border border-white/10 my-auto';
-      case 'desktop':
-      default:
-        return 'w-full h-full';
-    }
-  };
-
-  const handleCreateStarterHtml = async () => {
-    await createNode(
-      'index.html',
-      'file',
-      `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CloudIDE Web Project</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: radial-gradient(circle at 50% 20%, #1e293b, #0f172a);
-      color: #f8fafc;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 24px;
-      box-sizing: border-box;
-    }
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      color: #38bdf8;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      margin-bottom: 16px;
-    }
-    h1 {
-      font-size: 2.2rem;
-      margin: 0 0 12px;
-      background: linear-gradient(to right, #ffffff, #94a3b8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    p {
-      color: #94a3b8;
-      font-size: 15px;
-      max-width: 480px;
-      line-height: 1.6;
-    }
-    button {
-      background: #0284c7;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 16px;
-      transition: background 0.2s;
-    }
-    button:hover {
-      background: #0369a1;
-    }
-  </style>
-</head>
-<body>
-  <div class="badge">LIVE BROWSER PREVIEW</div>
-  <h1>CloudIDE Web Application</h1>
-  <p>Edit this HTML file in Monaco Editor. Saves will live-reload right here!</p>
-  <button onclick="alert('Hello from CloudIDE Interactive Preview!')">Click Me</button>
-</body>
-</html>`
-    );
-    setPreviewPath('index.html');
   };
 
   return (
@@ -171,54 +75,33 @@ export function BrowserPreview() {
           />
         </form>
 
-        {/* Viewport & External Actions */}
-        <div className="flex items-center gap-1">
-          {/* Device Size Switchers */}
-          <div className="flex items-center bg-white/[0.04] p-0.5 rounded-md border border-white/[0.06]">
-            <button
-              onClick={() => setDeviceMode('desktop')}
-              className={`p-1 rounded ${
-                deviceMode === 'desktop' ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Desktop View (100%)"
-            >
-              <Monitor className="w-3 h-3" />
-            </button>
-            <button
-              onClick={() => setDeviceMode('tablet')}
-              className={`p-1 rounded ${
-                deviceMode === 'tablet' ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Tablet View (768px)"
-            >
-              <Tablet className="w-3 h-3" />
-            </button>
-            <button
-              onClick={() => setDeviceMode('mobile')}
-              className={`p-1 rounded ${
-                deviceMode === 'mobile' ? 'bg-sky-500/20 text-sky-300' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Mobile View (375px)"
-            >
-              <Smartphone className="w-3 h-3" />
-            </button>
+        {/* Exactly 2 options: Desktop View and Open in New Tab Button */}
+        <div className="flex items-center gap-1.5">
+          {/* Option 1: Desktop View */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] font-medium"
+            title="Desktop View"
+          >
+            <Monitor className="w-3.5 h-3.5 text-sky-400" />
+            <span className="hidden md:inline">Desktop View</span>
           </div>
 
-          {/* Open in New Window Tab */}
+          {/* Option 2: Open in New Tab */}
           <a
             href={previewUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1 rounded hover:bg-white/[0.06] text-slate-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-white/[0.08] bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white transition-colors text-[11px] font-medium"
             title="Open Live Preview in New Window Tab"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            <span className="hidden md:inline">Open in New Tab</span>
           </a>
 
           {/* Close Panel */}
           <button
             onClick={togglePreview}
-            className="p-1 rounded hover:bg-white/[0.06] text-slate-400 hover:text-rose-400 transition-colors"
+            className="p-1 rounded hover:bg-white/[0.06] text-slate-400 hover:text-rose-400 transition-colors ml-1"
             title="Close Browser Preview"
           >
             <X className="w-3.5 h-3.5" />
@@ -228,7 +111,7 @@ export function BrowserPreview() {
 
       {/* Preview Viewport Area */}
       <div className="flex-1 w-full h-full bg-[#07090e] flex items-center justify-center p-0 overflow-hidden relative">
-        <div className={`relative bg-white transition-all duration-300 flex flex-col ${getDeviceWidth()}`}>
+        <div className="relative bg-white w-full h-full flex flex-col">
           <iframe
             ref={iframeRef}
             key={previewRefreshKey}

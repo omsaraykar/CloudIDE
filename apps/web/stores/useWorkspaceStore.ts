@@ -42,7 +42,7 @@ interface WorkspaceState {
   // Layout & UI
   isSidebarOpen: boolean;
   isBottomPanelOpen: boolean;
-  activeBottomTab: 'terminal' | 'output' | 'problems';
+  activeBottomTab: 'terminal' | 'problems';
 
   // Live Browser Preview
   isPreviewOpen: boolean;
@@ -64,7 +64,7 @@ interface WorkspaceState {
   runCode: (targetFilePath?: string) => Promise<void>;
   stopCode: () => void;
   clearOutput: () => void;
-  setBottomTab: (tab: 'terminal' | 'output' | 'problems') => void;
+  setBottomTab: (tab: 'terminal' | 'problems') => void;
   toggleBottomPanel: () => void;
   toggleSidebar: () => void;
   togglePreview: () => void;
@@ -118,7 +118,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   outputLogs: [],
   isSidebarOpen: true,
   isBottomPanelOpen: true,
-  activeBottomTab: 'output',
+  activeBottomTab: 'terminal',
   isPreviewOpen: false,
   previewPath: 'index.html',
   previewRefreshKey: 0,
@@ -146,7 +146,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         set((state) => ({
           isRunning: true,
           activeExecutionId: executionId,
-          activeBottomTab: 'output',
+          activeBottomTab: 'terminal',
           isBottomPanelOpen: true,
           outputLogs: [
             ...state.outputLogs,
@@ -445,24 +445,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   runCode: async (targetFilePath?: string) => {
-    const { workspace, activeFilePath, saveCurrentFile, isRunning } = get();
-    if (!workspace || isRunning) return;
+    const { workspace, activeFilePath, saveCurrentFile } = get();
+    if (!workspace) return;
 
     const fileToRun = targetFilePath || activeFilePath;
-    if (!fileToRun) {
-      set((state) => ({
-        outputLogs: [
-          ...state.outputLogs,
-          {
-            id: `${Date.now()}-warn`,
-            type: 'error',
-            text: 'No file selected to run. Please open a file first.\n',
-            time: new Date().toLocaleTimeString(),
-          },
-        ],
-      }));
-      return;
-    }
+    if (!fileToRun) return;
 
     // Save active file first
     await saveCurrentFile();
@@ -474,18 +461,24 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         previewPath: fileToRun,
         previewRefreshKey: state.previewRefreshKey + 1,
       }));
+      return;
     }
 
-    const socket = getSocket();
+    // For scripts/code, focus the real Bash terminal and send command
     set({
-      isRunning: true,
-      activeBottomTab: 'output',
+      activeBottomTab: 'terminal',
       isBottomPanelOpen: true,
     });
 
-    socket.emit('exec:run', {
+    const socket = getSocket();
+    const ext = fileToRun.split('.').pop()?.toLowerCase();
+    let cmd = `node "${fileToRun}"\n`;
+    if (ext === 'py') cmd = `python3 "${fileToRun}"\n`;
+    else if (ext === 'sh') cmd = `bash "${fileToRun}"\n`;
+
+    socket.emit('terminal:run-command', {
       workspaceId: workspace.id,
-      filePath: fileToRun,
+      command: cmd,
     });
   },
 

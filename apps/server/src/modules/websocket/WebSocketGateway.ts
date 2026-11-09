@@ -96,6 +96,15 @@ export class WebSocketGateway {
         this.terminalService.closeSession(sessionId);
       });
 
+      socket.on('terminal:run-command', ({ workspaceId, command }) => {
+        for (const [sid, sess] of this.terminalService.getSessions().entries()) {
+          if (sess.workspaceId === workspaceId) {
+            this.terminalService.write(sid, command);
+            break;
+          }
+        }
+      });
+
       // Execution trigger via WebSocket
       socket.on('exec:run', async ({ workspaceId, filePath, code }) => {
         const workspace = await this.workspaceManager.getWorkspace(workspaceId);

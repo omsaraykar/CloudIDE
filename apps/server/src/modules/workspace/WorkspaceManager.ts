@@ -45,13 +45,13 @@ export class WorkspaceManager {
         Tty: true,
         OpenStdin: true,
         WorkingDir: '/workspace',
-        User: 'node',
+        User: 'root',
         Cmd: ['tail', '-f', '/dev/null'],
         HostConfig: {
           Binds: [`${path.resolve(ws.path)}:/workspace:rw`],
           Memory: CONFIG.MEMORY_LIMIT_BYTES,
-          NanoCpus: 500000000,
-          PidsLimit: 50,
+          NanoCpus: 1000000000,
+          PidsLimit: 200,
           NetworkMode: 'bridge',
         },
       })) as Docker.Container;
@@ -65,6 +65,84 @@ export class WorkspaceManager {
       console.warn(`[WorkspaceManager] Failed to create Docker container:`, (dockerErr as Error).message);
       return null;
     }
+  }
+
+  /**
+   * Retrieves or provisions a dedicated, persistent 1-user container & empty workspace.
+   */
+  public async getOrCreateUserWorkspace(rawUsername: string): Promise<Workspace> {
+    const cleanUser = rawUsername.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'developer';
+    const workspaceId = `user-${cleanUser}`;
+    const workspacePath = path.join(CONFIG.WORKSPACES_DIR, workspaceId);
+
+    let ws = await db.getWorkspaceById(workspaceId);
+
+    // If workspace already exists
+    if (ws) {
+      this.fsService.watchWorkspace(ws.id, ws.path);
+      if (this.executionEngine.isDockerReady()) {
+        await this.ensureContainer(ws);
+      }
+      return ws;
+    }
+
+    // New empty workspace
+    await fs.mkdir(workspacePath, { recursive: true });
+    this.fsService.watchWorkspace(workspaceId, workspacePath);
+
+    let containerId: string | null = null;
+    if (this.executionEngine.isDockerReady()) {
+      try {
+        const containerName = `cloudide-user-${cleanUser}`;
+        try {
+          const oldContainer = this.docker.getContainer(containerName);
+          const inspect = await oldContainer.inspect();
+          if (!inspect.State.Running) {
+            await oldContainer.start();
+          }
+          containerId = oldContainer.id;
+        } catch {
+          const container = (await this.docker.createContainer({
+            Image: CONFIG.DOCKER_DEFAULT_IMAGE,
+            name: containerName,
+            Tty: true,
+            OpenStdin: true,
+            WorkingDir: '/workspace',
+            User: 'root', // Full root permissions
+            Cmd: ['tail', '-f', '/dev/null'],
+            HostConfig: {
+              Binds: [`${path.resolve(workspacePath)}:/workspace:rw`],
+              Memory: CONFIG.MEMORY_LIMIT_BYTES,
+              NanoCpus: 1000000000,
+              PidsLimit: 200,
+              NetworkMode: 'bridge',
+            },
+          })) as Docker.Container;
+
+          await container.start();
+          containerId = container.id;
+        }
+        console.log(`[WorkspaceManager] Dedicated user container ready: ${containerId} for user ${cleanUser}`);
+      } catch (dockerErr) {
+        console.warn(`[WorkspaceManager] Could not provision user container:`, dockerErr);
+      }
+    }
+
+    const now = new Date().toISOString();
+    ws = {
+      id: workspaceId,
+      name: `${cleanUser}'s Playground`,
+      language: 'javascript',
+      status: 'running',
+      containerId,
+      path: workspacePath,
+      template: 'empty',
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await db.saveWorkspace(ws);
+    return ws;
   }
 
   public async listWorkspaces(): Promise<Workspace[]> {

@@ -30,6 +30,7 @@ export interface ClientToServerEvents {
   'terminal:input': (data: TerminalInputData) => void;
   'terminal:resize': (data: TerminalResizeData) => void;
   'terminal:close': (sessionId: string) => void;
+  'terminal:run-command': (data: { workspaceId: string; command: string }) => void;
 
   // Execution actions
   'exec:run': (data: { workspaceId: string; filePath: string; code?: string }) => void;
