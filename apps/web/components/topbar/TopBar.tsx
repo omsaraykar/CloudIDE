@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Cpu,
   Sparkles,
+  Globe,
 } from 'lucide-react';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 
@@ -26,6 +27,8 @@ export function TopBar() {
     stopCode,
     toggleBottomPanel,
     isBottomPanelOpen,
+    isPreviewOpen,
+    togglePreview,
   } = useWorkspaceStore();
 
   const handleRun = () => {
@@ -132,6 +135,25 @@ export function TopBar() {
         >
           <Square className="w-3.5 h-3.5 fill-current" />
           <span className="hidden sm:inline">Stop</span>
+        </motion.button>
+
+        {/* Live Browser Preview Toggle Button */}
+        <motion.button
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
+          onClick={togglePreview}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            isPreviewOpen
+              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
+              : 'bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.08]'
+          }`}
+          title="Toggle Live Web Preview"
+        >
+          <Globe className="w-3.5 h-3.5 text-sky-400" />
+          <span className="hidden sm:inline">Preview</span>
+          {isPreviewOpen && (
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse ml-0.5" />
+          )}
         </motion.button>
 
         {/* Active file indicator */}

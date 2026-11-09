@@ -44,6 +44,11 @@ interface WorkspaceState {
   isBottomPanelOpen: boolean;
   activeBottomTab: 'terminal' | 'output' | 'problems';
 
+  // Live Browser Preview
+  isPreviewOpen: boolean;
+  previewPath: string;
+  previewRefreshKey: number;
+
   // Actions
   initWorkspace: (workspaceId: string) => Promise<void>;
   leaveWorkspace: () => void;
@@ -62,6 +67,10 @@ interface WorkspaceState {
   setBottomTab: (tab: 'terminal' | 'output' | 'problems') => void;
   toggleBottomPanel: () => void;
   toggleSidebar: () => void;
+  togglePreview: () => void;
+  setPreviewOpen: (open: boolean) => void;
+  setPreviewPath: (path: string) => void;
+  refreshPreview: () => void;
 }
 
 function detectLanguage(path: string): string {
@@ -110,6 +119,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   isSidebarOpen: true,
   isBottomPanelOpen: true,
   activeBottomTab: 'output',
+  isPreviewOpen: false,
+  previewPath: 'index.html',
+  previewRefreshKey: 0,
 
   initWorkspace: async (workspaceId: string) => {
     set({ isLoadingWorkspace: true });
@@ -267,9 +279,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     if (!workspace) return;
 
     // Check if already open
+    const isHtml = filePath.endsWith('.html') || filePath.endsWith('.htm');
     const existing = openFiles.find((f) => f.path === filePath);
     if (existing) {
-      set({ activeFilePath: filePath });
+      set({
+        activeFilePath: filePath,
+        ...(isHtml ? { previewPath: filePath } : {}),
+      });
       return;
     }
 
@@ -290,6 +306,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set({
         openFiles: [...openFiles, newFile],
         activeFilePath: filePath,
+        ...(isHtml ? { previewPath: filePath } : {}),
       });
     } catch (err) {
       console.error(`[Workspace Store] Error opening file ${filePath}:`, err);
@@ -368,8 +385,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     set({ saveStatus: 'saving' });
     try {
       await api.saveFileContent(workspace.id, activeFilePath, activeFile.content);
+      const ext = activeFilePath.split('.').pop()?.toLowerCase() || '';
+      const isWebAsset = ['html', 'htm', 'css', 'js'].includes(ext);
+
       set((state) => ({
         saveStatus: 'saved',
+        previewRefreshKey: isWebAsset ? state.previewRefreshKey + 1 : state.previewRefreshKey,
         openFiles: state.openFiles.map((file) =>
           file.path === activeFilePath
             ? { ...file, originalContent: file.content, isDirty: false }
@@ -446,6 +467,15 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     // Save active file first
     await saveCurrentFile();
 
+    const isHtml = fileToRun.endsWith('.html') || fileToRun.endsWith('.htm');
+    if (isHtml) {
+      set((state) => ({
+        isPreviewOpen: true,
+        previewPath: fileToRun,
+        previewRefreshKey: state.previewRefreshKey + 1,
+      }));
+    }
+
     const socket = getSocket();
     set({
       isRunning: true,
@@ -484,5 +514,21 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   toggleSidebar: () => {
     set((state) => ({ isSidebarOpen: !state.isSidebarOpen }));
+  },
+
+  togglePreview: () => {
+    set((state) => ({ isPreviewOpen: !state.isPreviewOpen }));
+  },
+
+  setPreviewOpen: (open) => {
+    set({ isPreviewOpen: open });
+  },
+
+  setPreviewPath: (path) => {
+    set({ previewPath: path });
+  },
+
+  refreshPreview: () => {
+    set((state) => ({ previewRefreshKey: state.previewRefreshKey + 1 }));
   },
 }));

@@ -10,11 +10,12 @@ import { TopBar } from '../topbar/TopBar';
 import { FileExplorer } from '../explorer/FileExplorer';
 import { EditorTabs } from '../editor/EditorTabs';
 import { CodeEditor } from '../editor/CodeEditor';
+import { BrowserPreview } from '../preview/BrowserPreview';
 import { BottomPanel } from '../bottom-panel/BottomPanel';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 
 export function WorkspaceLayout() {
-  const { isSidebarOpen, isBottomPanelOpen } = useWorkspaceStore();
+  const { isSidebarOpen, isBottomPanelOpen, isPreviewOpen } = useWorkspaceStore();
   const [isBottomMaximized, setIsBottomMaximized] = useState(false);
 
   return (
@@ -43,7 +44,19 @@ export function WorkspaceLayout() {
                 <Panel defaultSize={68} minSize={25} className="flex flex-col h-full">
                   <EditorTabs />
                   <div className="flex-1 w-full overflow-hidden relative">
-                    <CodeEditor />
+                    {isPreviewOpen ? (
+                      <PanelGroup direction="horizontal" autoSaveId="cloudide-editor-preview-panels">
+                        <Panel defaultSize={50} minSize={20} className="h-full">
+                          <CodeEditor />
+                        </Panel>
+                        <PanelResizeHandle className="w-[3px] bg-ide-border hover:bg-sky-500/50 transition-colors cursor-col-resize active:bg-sky-500" />
+                        <Panel defaultSize={50} minSize={25} className="h-full">
+                          <BrowserPreview />
+                        </Panel>
+                      </PanelGroup>
+                    ) : (
+                      <CodeEditor />
+                    )}
                   </div>
                 </Panel>
               )}

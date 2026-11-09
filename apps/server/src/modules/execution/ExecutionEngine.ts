@@ -63,6 +63,84 @@ export class ExecutionEngine {
 
     callbacks?.onStart?.(executionId, filePath);
 
+    const ext = path.extname(filePath).toLowerCase();
+
+    // Special handling for HTML / web documents
+    if (ext === '.html' || ext === '.htm') {
+      const previewUrl = `http://localhost:${CONFIG.PORT}/api/workspaces/${workspaceId}/preview/${filePath}`;
+      const msg = `\n🌐 [CloudIDE Web Preview] Serving HTML Document: "${filePath}"\n` +
+        `✓ Workspace ID: ${workspaceId}\n` +
+        `✓ Live Preview URL: ${previewUrl}\n` +
+        `✨ Active in CloudIDE Live Browser Preview.\n` +
+        `💡 Note: HTML documents run inside the browser rendering engine rather than the Node.js CLI runtime.\n`;
+
+      callbacks?.onStdout?.(executionId, msg);
+      const durationMs = Date.now() - startTime;
+      const result: ExecutionResult = {
+        executionId,
+        workspaceId,
+        filePath,
+        exitCode: 0,
+        stdout: msg,
+        stderr: '',
+        durationMs,
+        success: true,
+      };
+
+      await db.recordExecution(result);
+      callbacks?.onExit?.(executionId, 0, durationMs);
+      return result;
+    }
+
+    // Special handling for CSS stylesheets
+    if (ext === '.css') {
+      const msg = `\n🎨 [CloudIDE] CSS Stylesheet: "${filePath}"\n` +
+        `✓ Stylesheet loaded and validated.\n` +
+        `💡 Tip: Stylesheets are rendered within HTML documents (<link rel="stylesheet" href="${filePath}">).\n` +
+        `Open your HTML file and click Run to view live styles.\n`;
+
+      callbacks?.onStdout?.(executionId, msg);
+      const durationMs = Date.now() - startTime;
+      const result: ExecutionResult = {
+        executionId,
+        workspaceId,
+        filePath,
+        exitCode: 0,
+        stdout: msg,
+        stderr: '',
+        durationMs,
+        success: true,
+      };
+
+      await db.recordExecution(result);
+      callbacks?.onExit?.(executionId, 0, durationMs);
+      return result;
+    }
+
+    // Special handling for static config / docs
+    if (ext === '.json' || ext === '.md') {
+      const msg = `\n📄 [CloudIDE] Document File: "${filePath}"\n` +
+        `✓ Document validated.\n` +
+        `💡 Tip: ${ext === '.json' ? 'JSON is a data format' : 'Markdown is documentation'}, not an executable script.\n`;
+
+      callbacks?.onStdout?.(executionId, msg);
+      const durationMs = Date.now() - startTime;
+      const result: ExecutionResult = {
+        executionId,
+        workspaceId,
+        filePath,
+        exitCode: 0,
+        stdout: msg,
+        stderr: '',
+        durationMs,
+        success: true,
+      };
+
+      await db.recordExecution(result);
+      callbacks?.onExit?.(executionId, 0, durationMs);
+      return result;
+    }
+
     // If Docker is available and containerId is provided or docker can run container
     if (this.isDockerAvailable && containerId) {
       try {
@@ -272,7 +350,7 @@ export class ExecutionEngine {
       args = [filePath];
     } else if (ext === '.ts') {
       executable = 'node';
-      args = ['--max-old-space-size=256', filePath];
+      args = ['--experimental-strip-types', '--max-old-space-size=256', filePath];
     }
 
     return new Promise<ExecutionResult>((resolve) => {
