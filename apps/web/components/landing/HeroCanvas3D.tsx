@@ -25,6 +25,7 @@ export function HeroCanvas3D() {
 
     const camera = new THREE.PerspectiveCamera(42, getWidth() / getHeight(), 0.1, 100);
     camera.position.set(0, 0.1, 9.2);
+    camera.lookAt(0, -0.4, 0);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -37,28 +38,37 @@ export function HeroCanvas3D() {
     renderer.toneMappingExposure = 1.35;
     container.appendChild(renderer.domElement);
 
-    // 2. Cinematic Lighting Setup (Soft Violet Satin & Indigo Rim, matching reference)
+    // 2. Consistent Fixed Lighting Setup
+    // Fixed ambient base
     const ambientLight = new THREE.AmbientLight(0x1a0f2e, 1.8);
     scene.add(ambientLight);
 
-    // Top-left purple key light (soft crease illumination)
-    const keyLight = new THREE.DirectionalLight(0xc084fc, 3.8);
-    keyLight.position.set(-5, 6, 4.5);
+    // Target for all directional lights (fixed at center of the 3D model)
+    const lightTarget = new THREE.Object3D();
+    lightTarget.position.set(0, -3.8, 0.4);
+    scene.add(lightTarget);
+
+    // Fixed Top-left purple key light (consistent main light source from top-left)
+    const keyLight = new THREE.DirectionalLight(0xc084fc, 4.0);
+    keyLight.position.set(-6, 6.5, 4.5);
+    keyLight.target = lightTarget;
     scene.add(keyLight);
 
-    // Top-right indigo rim light (crisp silhouette)
-    const rimLightRight = new THREE.DirectionalLight(0x818cf8, 3.2);
-    rimLightRight.position.set(6, 4.5, -2);
+    // Fixed Top-right indigo rim light (crisp silhouette)
+    const rimLightRight = new THREE.DirectionalLight(0x818cf8, 3.4);
+    rimLightRight.position.set(6.5, 4.5, -2.5);
+    rimLightRight.target = lightTarget;
     scene.add(rimLightRight);
 
-    // Left purple rim light
+    // Fixed Left purple rim light
     const rimLightLeft = new THREE.DirectionalLight(0xa855f7, 2.8);
-    rimLightLeft.position.set(-6, 3.5, -2.5);
+    rimLightLeft.position.set(-6.5, 3.5, -2.5);
+    rimLightLeft.target = lightTarget;
     scene.add(rimLightLeft);
 
-    // Front-bottom fill light (illuminates lower curves)
+    // Fixed Front-bottom fill light (gentle ambient curve illumination)
     const fillLight = new THREE.PointLight(0x7c3aed, 2.2, 20);
-    fillLight.position.set(0, -3.5, 4.5);
+    fillLight.position.set(0, -4.0, 4.5);
     scene.add(fillLight);
 
     // 3. Central 3D Organic Liquid Model (Three.js)
@@ -168,9 +178,12 @@ export function HeroCanvas3D() {
         vec3 p2 = position + bitangent * eps + tNormal * getDisplacement(position + bitangent * eps);
 
         vec3 computedNormal = normalize(cross(p1 - p0, p2 - p0));
-        vec3 transformedNormal = computedNormal;
+        vec3 objectNormal = computedNormal;
+
+        // Transform normal into view space using normalMatrix for consistent world lighting
+        vec3 transformedNormal = normalMatrix * computedNormal;
         #ifdef USE_TANGENT
-          vec3 transformedTangent = objectTangent;
+          vec3 transformedTangent = (modelViewMatrix * vec4(tangent, 0.0)).xyz;
         #endif
         `
       );
