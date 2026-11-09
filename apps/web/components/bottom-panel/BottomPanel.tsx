@@ -2,10 +2,8 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
 import {
   Terminal as TerminalIcon,
-  AlertCircle,
   X,
   Maximize2,
   Minimize2,
@@ -30,55 +28,19 @@ interface BottomPanelProps {
 }
 
 export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPanelProps) {
-  const {
-    activeBottomTab,
-    setBottomTab,
-    toggleBottomPanel,
-  } = useWorkspaceStore();
+  const { toggleBottomPanel } = useWorkspaceStore();
 
   return (
     <div className="h-full w-full flex flex-col bg-[#09090b] border-t border-white/[0.08] select-none text-zinc-300">
-      {/* Panel Top Header / Tabs */}
+      {/* Panel Top Header */}
       <div className="h-9 px-2.5 bg-[#0c0c0e] border-b border-white/[0.06] flex items-center justify-between text-xs">
         <div className="flex items-center gap-1">
           {/* Terminal Tab */}
-          <button
-            onClick={() => setBottomTab('terminal')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all relative ${
-              activeBottomTab === 'terminal'
-                ? 'text-zinc-100 bg-white/[0.06]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]'
-            }`}
-          >
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-100 bg-white/[0.06] relative">
             <TerminalIcon className="w-3.5 h-3.5 text-sky-400" />
             <span>Bash Terminal</span>
-            {activeBottomTab === 'terminal' && (
-              <motion.div
-                layoutId="bottom-tab-active"
-                className="absolute bottom-0 left-0 right-0 h-[2px] bg-sky-400"
-              />
-            )}
-          </button>
-
-          {/* Problems Tab */}
-          <button
-            onClick={() => setBottomTab('problems')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all relative ${
-              activeBottomTab === 'problems'
-                ? 'text-zinc-100 bg-white/[0.06]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]'
-            }`}
-          >
-            <AlertCircle className="w-3.5 h-3.5" />
-            <span>Problems</span>
-            <span className="text-[10px] px-1.5 rounded bg-white/[0.06] text-zinc-400 font-mono">0</span>
-            {activeBottomTab === 'problems' && (
-              <motion.div
-                layoutId="bottom-tab-active"
-                className="absolute bottom-0 left-0 right-0 h-[2px] bg-sky-400"
-              />
-            )}
-          </button>
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-sky-400" />
+          </div>
         </div>
 
         {/* Panel Actions */}
@@ -112,17 +74,7 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
 
       {/* Panel Body */}
       <div className="flex-1 w-full h-[calc(100%-36px)] overflow-hidden bg-[#09090b]">
-        {activeBottomTab === 'terminal' && (
-          <div className="h-full w-full">
-            <XtermTerminal />
-          </div>
-        )}
-
-        {activeBottomTab === 'problems' && (
-          <div className="h-full w-full flex items-center justify-center text-xs text-zinc-500 font-mono">
-            No problems detected in workspace.
-          </div>
-        )}
+        <XtermTerminal />
       </div>
     </div>
   );
