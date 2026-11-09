@@ -7,10 +7,10 @@ import {
   CheckCircle2,
   Clock,
   CircleDot,
-  Terminal as TerminalIcon,
   ChevronLeft,
   Globe,
   PanelLeft,
+  PanelBottom,
 } from 'lucide-react';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 
@@ -40,7 +40,7 @@ export function TopBar() {
 
   return (
     <header className="h-[42px] bg-[#09090b] border-b border-white/[0.08] flex items-center justify-between px-3 select-none z-20 font-sans">
-      {/* Left: Dashboard Back + Sidebar Toggle + Branding + Workspace Name */}
+      {/* Left: Dashboard Back + Branding + Workspace Name */}
       <div className="flex items-center gap-2">
         <Link
           href="/"
@@ -49,18 +49,6 @@ export function TopBar() {
         >
           <ChevronLeft className="w-4 h-4" />
         </Link>
-
-        <button
-          onClick={toggleSidebar}
-          className={`p-1.5 rounded-md text-xs transition-colors ${
-            isSidebarOpen
-              ? 'text-zinc-200 bg-white/[0.06]'
-              : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]'
-          }`}
-          title="Toggle Explorer Sidebar (Ctrl+B)"
-        >
-          <PanelLeft className="w-4 h-4" />
-        </button>
 
         <div className="h-3.5 w-[1px] bg-white/[0.1] mx-0.5" />
 
@@ -118,7 +106,7 @@ export function TopBar() {
         )}
       </div>
 
-      {/* Right: Autosave status & Terminal Toggle */}
+      {/* Right: Autosave status & Panel Toggles (Sidebar & Bottom Terminal) */}
       <div className="flex items-center gap-2">
         {/* Autosave Status Indicator */}
         <div className="flex items-center gap-1 text-[11px] text-zinc-400 px-2 py-0.5 rounded bg-white/[0.02] border border-white/[0.06]">
@@ -162,19 +150,36 @@ export function TopBar() {
           </AnimatePresence>
         </div>
 
-        {/* Terminal Toggle Button */}
-        <button
-          onClick={toggleBottomPanel}
-          className={`px-2.5 py-1 rounded-md text-xs font-mono transition-colors flex items-center gap-1.5 border ${
-            isBottomPanelOpen
-              ? 'bg-zinc-800 text-zinc-100 border-white/[0.12]'
-              : 'bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04] border-white/[0.06]'
-          }`}
-          title="Toggle Bash Terminal (Ctrl+`)"
-        >
-          <TerminalIcon className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Terminal</span>
-        </button>
+        <div className="h-3.5 w-[1px] bg-white/[0.1] mx-0.5" />
+
+        {/* Layout Panel Toggles */}
+        <div className="flex items-center gap-1">
+          {/* Toggle Explorer Sidebar */}
+          <button
+            onClick={toggleSidebar}
+            className={`p-1.5 rounded-md text-xs transition-colors ${
+              isSidebarOpen
+                ? 'text-zinc-100 bg-white/[0.08] shadow-sm'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
+            }`}
+            title="Toggle Explorer Sidebar (Ctrl+B)"
+          >
+            <PanelLeft className="w-4 h-4" />
+          </button>
+
+          {/* Toggle Terminal / Bottom Panel */}
+          <button
+            onClick={toggleBottomPanel}
+            className={`p-1.5 rounded-md text-xs transition-colors ${
+              isBottomPanelOpen
+                ? 'text-zinc-100 bg-white/[0.08] shadow-sm'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
+            }`}
+            title="Toggle Bash Terminal (Ctrl+`)"
+          >
+            <PanelBottom className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </header>
   );
