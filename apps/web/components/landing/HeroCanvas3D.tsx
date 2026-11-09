@@ -212,7 +212,7 @@ export function HeroCanvas3D() {
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // 5. Mouse Interaction Tracking (Inverted per user direction requirements)
+    // 5. Mouse Interaction Tracking
     const mouse = {
       targetX: 0,
       targetY: 0,
@@ -230,32 +230,45 @@ export function HeroCanvas3D() {
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
 
-    // 6. Smooth Animation Loop
+    // 6. Continuous Dynamic Animation Loop
     let animationFrameId: number;
-    let startTime = performance.now();
+    const startTime = performance.now();
+    let lastTime = performance.now();
+    let currentRotY = 0;
+    let currentRotX = 0;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      const elapsed = (performance.now() - startTime) * 0.001;
+      const now = performance.now();
+      const delta = Math.min((now - lastTime) * 0.001, 0.1);
+      lastTime = now;
+
+      const elapsed = (now - startTime) * 0.001;
       customUniforms.uTime.value = elapsed;
 
       // Mouse tracking with smooth inertia
-      mouse.currentX += (mouse.targetX - mouse.currentX) * 0.05;
-      mouse.currentY += (mouse.targetY - mouse.currentY) * 0.05;
+      mouse.currentX += (mouse.targetX - mouse.currentX) * 0.06;
+      mouse.currentY += (mouse.targetY - mouse.currentY) * 0.06;
 
-      // Keep camera stable for clear rotation feedback
+      // Keep camera stable
       camera.position.set(0, 0.1, 9.2);
       camera.lookAt(0, -0.4, 0);
 
-      // Interactive rotation per user requirement:
-      // Pointer is in RIGHT (currentX > 0) -> model rotates LEFT (-currentX)
-      // Pointer is in LEFT (currentX < 0)  -> model rotates RIGHT (+currentX)
-      blobMesh.rotation.y = elapsed * 0.06 - mouse.currentX * 0.45;
+      // Continuous angular velocity based on pointer position (keeps moving in direction):
+      // Pointer is in RIGHT (currentX > 0) -> continuously rotates LEFT (negative angular velocity)
+      // Pointer is in LEFT  (currentX < 0) -> continuously rotates RIGHT (positive angular velocity)
+      const angularSpeedY = 0.06 - mouse.currentX * 0.9;
 
-      // Pointer is DOWN (currentY > 0) -> model rotates UP (-currentY)
-      // Pointer is UP (currentY < 0)   -> model rotates DOWN (+currentY)
-      blobMesh.rotation.x = -mouse.currentY * 0.38;
+      // Pointer is DOWN (currentY > 0) -> continuously rotates UP (negative angular velocity)
+      // Pointer is UP   (currentY < 0) -> continuously rotates DOWN (positive angular velocity)
+      const angularSpeedX = -mouse.currentY * 0.75;
+
+      currentRotY += angularSpeedY * delta;
+      currentRotX += angularSpeedX * delta;
+
+      blobMesh.rotation.y = currentRotY;
+      blobMesh.rotation.x = currentRotX;
 
       // Gentle starfield drift
       starMesh.rotation.y = elapsed * 0.01;
