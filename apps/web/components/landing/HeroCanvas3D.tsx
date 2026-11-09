@@ -212,7 +212,7 @@ export function HeroCanvas3D() {
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // 5. Mouse Interaction Tracking
+    // 5. Mouse Interaction Tracking (Inverted per user direction requirements)
     const mouse = {
       targetX: 0,
       targetY: 0,
@@ -222,8 +222,8 @@ export function HeroCanvas3D() {
 
     const onPointerMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
-      const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const normY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1; // -1 (left) to +1 (right)
+      const normY = ((e.clientY - rect.top) / rect.height) * 2 - 1; // -1 (top/up) to +1 (bottom/down)
       mouse.targetX = normX;
       mouse.targetY = normY;
     };
@@ -240,18 +240,22 @@ export function HeroCanvas3D() {
       const elapsed = (performance.now() - startTime) * 0.001;
       customUniforms.uTime.value = elapsed;
 
-      // Mouse tracking with inertia
-      mouse.currentX += (mouse.targetX - mouse.currentX) * 0.04;
-      mouse.currentY += (mouse.targetY - mouse.currentY) * 0.04;
+      // Mouse tracking with smooth inertia
+      mouse.currentX += (mouse.targetX - mouse.currentX) * 0.05;
+      mouse.currentY += (mouse.targetY - mouse.currentY) * 0.05;
 
-      // Camera parallax
-      camera.position.x = mouse.currentX * 0.6;
-      camera.position.y = 0.3 + mouse.currentY * 0.35;
+      // Keep camera stable for clear rotation feedback
+      camera.position.set(0, 0.1, 9.2);
       camera.lookAt(0, -0.4, 0);
 
-      // Model rotation
-      blobMesh.rotation.y = elapsed * 0.07 + mouse.currentX * 0.25;
-      blobMesh.rotation.x = mouse.currentY * 0.18;
+      // Interactive rotation per user requirement:
+      // Pointer is in RIGHT (currentX > 0) -> model rotates LEFT (-currentX)
+      // Pointer is in LEFT (currentX < 0)  -> model rotates RIGHT (+currentX)
+      blobMesh.rotation.y = elapsed * 0.06 - mouse.currentX * 0.45;
+
+      // Pointer is DOWN (currentY > 0) -> model rotates UP (-currentY)
+      // Pointer is UP (currentY < 0)   -> model rotates DOWN (+currentY)
+      blobMesh.rotation.x = -mouse.currentY * 0.38;
 
       // Gentle starfield drift
       starMesh.rotation.y = elapsed * 0.01;
