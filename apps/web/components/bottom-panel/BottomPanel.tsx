@@ -130,6 +130,15 @@ export function BottomPanel({ isMaximized = false, onToggleMaximize }: BottomPan
 
         {/* Panel Actions */}
         <div className="flex items-center gap-1 text-slate-400">
+          {activeBottomTab === 'terminal' && (
+            <div className="flex items-center gap-1.5 mr-2">
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>terminal</span>
+              </span>
+            </div>
+          )}
+
           {activeBottomTab === 'output' && (
             <>
               <button

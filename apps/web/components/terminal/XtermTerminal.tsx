@@ -22,15 +22,18 @@ export function XtermTerminal() {
     const term = new Terminal({
       cursorBlink: true,
       cursorStyle: 'block',
+      cursorWidth: 2,
       fontSize: 13,
-      fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace",
+      lineHeight: 1.25,
+      letterSpacing: 0,
+      fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace",
       theme: {
-        background: '#0a0d12',
+        background: '#05070a',
         foreground: '#e2e8f0',
         cursor: '#38bdf8',
-        cursorAccent: '#0a0d12',
-        selectionBackground: '#2563eb55',
-        black: '#1e293b',
+        cursorAccent: '#05070a',
+        selectionBackground: 'rgba(56, 189, 248, 0.25)',
+        black: '#0f172a',
         red: '#f87171',
         green: '#4ade80',
         yellow: '#facc15',
@@ -150,7 +153,7 @@ export function XtermTerminal() {
   }, [workspace]);
 
   return (
-    <div className="h-full w-full bg-[#0a0d12] p-2 overflow-hidden flex flex-col">
+    <div className="h-full w-full bg-[#05070a] px-3.5 py-2.5 overflow-hidden flex flex-col">
       <div ref={terminalRef} className="h-full w-full" />
     </div>
   );

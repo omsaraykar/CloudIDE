@@ -76,7 +76,20 @@ export class TerminalService {
     // 2. Local interactive shell fallback
     const isWin = process.platform === 'win32';
     const shell = isWin ? 'powershell.exe' : (process.env.SHELL || 'bash');
-    const shellArgs = isWin ? ['-NoLogo'] : [];
+    const wsName = workspace.name || 'workspace';
+
+    const customPromptCmd = [
+      `Write-Host "CloudIDE Interactive Terminal [${wsName}]" -ForegroundColor Cyan;`,
+      `Write-Host "Environment: Node.js $(node -v) | Ready" -ForegroundColor DarkGray;`,
+      'function prompt {',
+      '  $loc = Split-Path -Leaf (Get-Location);',
+      '  "$([char]27)[1;36mcloudide$([char]27)[0m:$([char]27)[1;32m$loc$([char]27)[0m$ "',
+      '}'
+    ].join(' ');
+
+    const shellArgs = isWin
+      ? ['-NoLogo', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-NoExit', '-Command', customPromptCmd]
+      : ['--norc', '--noprofile'];
 
     const proc = spawn(shell, shellArgs, {
       cwd: workspace.path,
@@ -114,7 +127,6 @@ export class TerminalService {
       createdAt: Date.now(),
     });
 
-    onData(sessionId, `\x1b[1;34mConnected to CloudIDE Local Sandbox Terminal [${workspace.name}]\x1b[0m\r\n`);
     return sessionId;
   }
 
