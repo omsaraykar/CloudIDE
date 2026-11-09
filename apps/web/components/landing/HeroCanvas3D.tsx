@@ -10,17 +10,17 @@ export function HeroCanvas3D() {
     const container = containerRef.current;
     if (!container) return;
 
-    // 1. Scene Setup
+    // 1. Scene & Fog Setup (blends into #09090b background)
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x05070a, 0.04);
+    scene.fog = new THREE.FogExp2(0x09090b, 0.038);
 
     const camera = new THREE.PerspectiveCamera(
-      45,
+      55,
       container.clientWidth / container.clientHeight,
       0.1,
       100
     );
-    camera.position.set(0, 1.2, 9.5);
+    camera.position.set(0, 3.5, 12);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -30,411 +30,225 @@ export function HeroCanvas3D() {
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.3;
+    renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
-    // Root group for all interactive tilt & rotation
-    const worldGroup = new THREE.Group();
-    scene.add(worldGroup);
-
-    // Track resources for safe disposal
+    // Track disposables
     const disposables: { dispose: () => void }[] = [];
     const register = <T extends { dispose: () => void }>(item: T): T => {
       disposables.push(item);
       return item;
     };
 
-    // -------------------------------------------------------------
-    // 2. CENTRAL CONTAINER POD (Symbolizing Docker Containerization)
-    // -------------------------------------------------------------
-    const containerGroup = new THREE.Group();
-    worldGroup.add(containerGroup);
+    // 2. Interactive Digital Terrain Wave Geometry
+    const gridWidth = 42;
+    const gridDepth = 36;
+    const segmentsX = 80;
+    const segmentsY = 70;
 
-    // Glass walls of container
-    const boxGeo = register(new THREE.BoxGeometry(2.4, 2.4, 2.4));
-    const glassMat = register(
-      new THREE.MeshPhysicalMaterial({
-        color: 0x0f172a,
-        emissive: 0x0284c7,
-        emissiveIntensity: 0.15,
-        roughness: 0.1,
-        metalness: 0.8,
-        transparent: true,
-        opacity: 0.25,
-        transmission: 0.6,
-        ior: 1.4,
-      })
+    const planeGeo = register(
+      new THREE.PlaneGeometry(gridWidth, gridDepth, segmentsX, segmentsY)
     );
-    const glassBox = new THREE.Mesh(boxGeo, glassMat);
-    containerGroup.add(glassBox);
+    // Rotate to lie horizontally
+    planeGeo.rotateX(-Math.PI / 2.15);
 
-    // Neon edge rails
-    const boxEdges = register(new THREE.EdgesGeometry(boxGeo));
-    const edgeMat = register(
-      new THREE.LineBasicMaterial({
+    // Store base positions for wave calculation
+    const basePositions = planeGeo.attributes.position.clone();
+    const count = basePositions.count;
+
+    // A. Wireframe Wave Mesh
+    const wireframeMat = register(
+      new THREE.MeshBasicMaterial({
         color: 0x38bdf8,
+        wireframe: true,
         transparent: true,
-        opacity: 0.85,
-        linewidth: 2,
+        opacity: 0.22,
       })
     );
-    const edgeLines = new THREE.LineSegments(boxEdges, edgeMat);
-    containerGroup.add(edgeLines);
+    const waveMesh = new THREE.Mesh(planeGeo, wireframeMat);
+    waveMesh.position.set(0, -2.4, -2);
+    scene.add(waveMesh);
 
-    // 8 Corner reinforcement brackets (Container pads)
-    const cornerGeo = register(new THREE.BoxGeometry(0.35, 0.35, 0.35));
-    const cornerMat = register(
-      new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
-        emissive: 0x38bdf8,
-        emissiveIntensity: 0.4,
-        roughness: 0.3,
-        metalness: 0.9,
-      })
-    );
-    const cornerPositions = [
-      [-1.2, -1.2, -1.2],
-      [-1.2, -1.2, 1.2],
-      [-1.2, 1.2, -1.2],
-      [-1.2, 1.2, 1.2],
-      [1.2, -1.2, -1.2],
-      [1.2, -1.2, 1.2],
-      [1.2, 1.2, -1.2],
-      [1.2, 1.2, 1.2],
-    ];
-    cornerPositions.forEach(([x, y, z]) => {
-      const corner = new THREE.Mesh(cornerGeo, cornerMat);
-      corner.position.set(x, y, z);
-      containerGroup.add(corner);
-    });
-
-    // -------------------------------------------------------------
-    // 3. FLOATING HOLOGRAPHIC CODE GLYPH: < / > (Symbolizing Editor & Code)
-    // -------------------------------------------------------------
-    const codeGlyphGroup = new THREE.Group();
-    containerGroup.add(codeGlyphGroup);
-
-    const segmentMat = register(
-      new THREE.MeshStandardMaterial({
-        color: 0x38bdf8,
-        emissive: 0x38bdf8,
-        emissiveIntensity: 1.8,
-        roughness: 0.2,
-        metalness: 0.5,
-      })
-    );
-
-    // Helper to create glowing cylinder bars for the `< / >` code symbol
-    const createBar = (length: number, rotZ: number, posX: number, posY: number) => {
-      const geo = register(new THREE.CylinderGeometry(0.045, 0.045, length, 16));
-      const mesh = new THREE.Mesh(geo, segmentMat);
-      mesh.rotation.z = rotZ;
-      mesh.position.set(posX, posY, 0);
-      codeGlyphGroup.add(mesh);
+    // B. Glowing Peak Particle Nodes
+    const createCircleTexture = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 32;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.3, 'rgba(56, 189, 248, 0.8)');
+        gradient.addColorStop(0.7, 'rgba(14, 165, 233, 0.2)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 32, 32);
+      }
+      return register(new THREE.CanvasTexture(canvas));
     };
 
-    // Left Angle Bracket `<`
-    createBar(0.65, Math.PI / 4, -0.65, 0.22);
-    createBar(0.65, -Math.PI / 4, -0.65, -0.22);
-
-    // Slash `/`
-    createBar(0.95, -Math.PI / 7, 0, 0);
-
-    // Right Angle Bracket `>`
-    createBar(0.65, -Math.PI / 4, 0.65, 0.22);
-    createBar(0.65, Math.PI / 4, 0.65, -0.22);
-
-    // Inner glowing energy core inside the code glyph
-    const coreSphereGeo = register(new THREE.SphereGeometry(0.28, 24, 24));
-    const coreSphereMat = register(
-      new THREE.MeshBasicMaterial({
-        color: 0x60a5fa,
+    const particleTexture = createCircleTexture();
+    const pointsMat = register(
+      new THREE.PointsMaterial({
+        size: 0.12,
+        map: particleTexture,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.7,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
       })
     );
-    const coreSphere = new THREE.Mesh(coreSphereGeo, coreSphereMat);
-    codeGlyphGroup.add(coreSphere);
+    const wavePoints = new THREE.Points(planeGeo, pointsMat);
+    wavePoints.position.copy(waveMesh.position);
+    scene.add(wavePoints);
 
-    // -------------------------------------------------------------
-    // 4. SATELLITE RUNTIME PODS (JS, TS, Python, Docker)
-    // -------------------------------------------------------------
-    const POD_CONFIGS = [
-      { color: 0xf59e0b, name: 'Node.js', angle: 0 },
-      { color: 0x3b82f6, name: 'TypeScript', angle: Math.PI * 0.5 },
-      { color: 0x10b981, name: 'Python', angle: Math.PI },
-      { color: 0x06b6d4, name: 'Docker', angle: Math.PI * 1.5 },
-    ];
+    // C. Ambient Floating Cyber Dust Particles
+    const dustCount = 180;
+    const dustGeo = register(new THREE.BufferGeometry());
+    const dustPositions = new Float32Array(dustCount * 3);
+    const dustSpeeds = new Float32Array(dustCount);
 
-    const satelliteOrbitRadius = 4.2;
-    const satellites: {
-      mesh: THREE.Group;
-      angle: number;
-      speed: number;
-      color: number;
-      laser: THREE.Line;
-      packet: THREE.Mesh;
-      packetProgress: number;
-    }[] = [];
-
-    const satelliteBoxGeo = register(new THREE.BoxGeometry(0.7, 0.7, 0.7));
-    const satelliteEdges = register(new THREE.EdgesGeometry(satelliteBoxGeo));
-
-    POD_CONFIGS.forEach((cfg) => {
-      const satGroup = new THREE.Group();
-      worldGroup.add(satGroup);
-
-      // Mini pod body
-      const satMat = register(
-        new THREE.MeshStandardMaterial({
-          color: 0x090d16,
-          emissive: cfg.color,
-          emissiveIntensity: 0.5,
-          roughness: 0.3,
-          metalness: 0.8,
-          transparent: true,
-          opacity: 0.7,
-        })
-      );
-      const satMesh = new THREE.Mesh(satelliteBoxGeo, satMat);
-      satGroup.add(satMesh);
-
-      // Glowing edge lines
-      const satEdgeMat = register(
-        new THREE.LineBasicMaterial({
-          color: cfg.color,
-          transparent: true,
-          opacity: 0.9,
-        })
-      );
-      const satEdgeLine = new THREE.LineSegments(satelliteEdges, satEdgeMat);
-      satGroup.add(satEdgeLine);
-
-      // Laser stream connecting satellite to central container
-      const linePositions = new Float32Array(6);
-      const lineGeo = register(new THREE.BufferGeometry());
-      lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
-      const lineMat = register(
-        new THREE.LineDashedMaterial({
-          color: cfg.color,
-          dashSize: 0.2,
-          gapSize: 0.15,
-          transparent: true,
-          opacity: 0.45,
-        })
-      );
-      const laserLine = new THREE.Line(lineGeo, lineMat);
-      worldGroup.add(laserLine);
-
-      // Data Packet travelling along the laser stream
-      const packetGeo = register(new THREE.SphereGeometry(0.08, 12, 12));
-      const packetMat = register(
-        new THREE.MeshBasicMaterial({
-          color: cfg.color,
-          transparent: true,
-          opacity: 0.9,
-        })
-      );
-      const packetMesh = new THREE.Mesh(packetGeo, packetMat);
-      worldGroup.add(packetMesh);
-
-      satellites.push({
-        mesh: satGroup,
-        angle: cfg.angle,
-        speed: 0.25,
-        color: cfg.color,
-        laser: laserLine,
-        packet: packetMesh,
-        packetProgress: Math.random(),
-      });
-    });
-
-    // -------------------------------------------------------------
-    // 5. CYBER MAINFRAME GRID FLOOR (Symbolizing Cloud Infrastructure)
-    // -------------------------------------------------------------
-    const gridHelper = register(new THREE.GridHelper(26, 26, 0x38bdf8, 0x1e293b));
-    gridHelper.position.y = -3.2;
-    (gridHelper.material as THREE.Material).transparent = true;
-    (gridHelper.material as THREE.Material).opacity = 0.35;
-    worldGroup.add(gridHelper);
-
-    // -------------------------------------------------------------
-    // 6. STREAMING DATA PARTICLES (Symbolizing Socket.IO & Realtime Packets)
-    // -------------------------------------------------------------
-    const particleCount = 900;
-    const particlePositions = new Float32Array(particleCount * 3);
-    const particleColors = new Float32Array(particleCount * 3);
-
-    const c1 = new THREE.Color(0x38bdf8);
-    const c2 = new THREE.Color(0x818cf8);
-    const c3 = new THREE.Color(0x34d399);
-
-    for (let i = 0; i < particleCount; i++) {
-      // Cylinder cloud distribution
-      const radius = 2.0 + Math.random() * 5.5;
-      const angle = Math.random() * Math.PI * 2;
-      const y = (Math.random() - 0.5) * 5.0;
-
-      particlePositions[i * 3] = radius * Math.cos(angle);
-      particlePositions[i * 3 + 1] = y;
-      particlePositions[i * 3 + 2] = radius * Math.sin(angle);
-
-      const color = Math.random() < 0.55 ? c1 : Math.random() < 0.85 ? c2 : c3;
-      particleColors[i * 3] = color.r;
-      particleColors[i * 3 + 1] = color.g;
-      particleColors[i * 3 + 2] = color.b;
+    for (let i = 0; i < dustCount; i++) {
+      dustPositions[i * 3] = (Math.random() - 0.5) * 35;
+      dustPositions[i * 3 + 1] = Math.random() * 8 - 1;
+      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 25;
+      dustSpeeds[i] = 0.003 + Math.random() * 0.008;
     }
 
-    const particleGeo = register(new THREE.BufferGeometry());
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
-
-    const particleMat = register(
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+    const dustMat = register(
       new THREE.PointsMaterial({
-        size: 0.065,
-        vertexColors: true,
+        size: 0.08,
+        map: particleTexture,
         transparent: true,
-        opacity: 0.75,
+        opacity: 0.45,
         blending: THREE.AdditiveBlending,
+        depthWrite: false,
       })
     );
-    const particles = new THREE.Points(particleGeo, particleMat);
-    worldGroup.add(particles);
+    const dustMesh = new THREE.Points(dustGeo, dustMat);
+    scene.add(dustMesh);
 
-    // -------------------------------------------------------------
-    // 7. LIGHTING
-    // -------------------------------------------------------------
-    const ambientLight = register(new THREE.AmbientLight(0xffffff, 0.7));
-    scene.add(ambientLight);
+    // 3. Mouse Interaction & Physics
+    const mouse = {
+      x: 0,
+      y: 0,
+      targetX: 0,
+      targetY: 0,
+      worldX: 0,
+      worldZ: 0,
+    };
 
-    const keyLight = register(new THREE.PointLight(0x38bdf8, 4, 18));
-    keyLight.position.set(4, 4, 5);
-    scene.add(keyLight);
-
-    const rimLight = register(new THREE.PointLight(0x818cf8, 3, 18));
-    rimLight.position.set(-4, -2, -3);
-    scene.add(rimLight);
-
-    // -------------------------------------------------------------
-    // 8. INTERACTIVITY: MOUSE TRACKING & PARALLAX SCROLL
-    // -------------------------------------------------------------
-    let mouseX = 0;
-    let mouseY = 0;
-    let targetRotationX = 0;
-    let targetRotationY = 0;
-    let scrollY = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
+    const onPointerMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      mouseX = x * 2;
-      mouseY = y * 2;
+      const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const normY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+
+      mouse.targetX = normX;
+      mouse.targetY = normY;
+      mouse.worldX = normX * 12;
+      mouse.worldZ = normY * 8;
     };
 
-    const handleScroll = () => {
-      scrollY = window.scrollY || 0;
-    };
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    const handleResize = () => {
-      if (!container) return;
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    window.addEventListener('resize', handleResize);
-
-    // -------------------------------------------------------------
-    // 9. ANIMATION LOOP
-    // -------------------------------------------------------------
+    // 4. Smooth Animation Loop
     let animationFrameId: number;
-    const clock = new THREE.Clock();
+    let clock = new THREE.Clock();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      const elapsed = clock.getElapsedTime();
 
-      // Slow majestic rotation of central container
-      containerGroup.rotation.y = elapsed * 0.2;
-      containerGroup.rotation.x = Math.sin(elapsed * 0.3) * 0.12;
+      const elapsedTime = clock.getElapsedTime();
 
-      // Inner code glyph floats and bobs gently
-      codeGlyphGroup.position.y = Math.sin(elapsed * 1.6) * 0.1;
-      codeGlyphGroup.rotation.y = -elapsed * 0.4;
-      const pulseScale = 1 + Math.sin(elapsed * 2.5) * 0.05;
-      coreSphere.scale.set(pulseScale, pulseScale, pulseScale);
+      // Smooth inertia mouse tracking
+      mouse.x += (mouse.targetX - mouse.x) * 0.04;
+      mouse.y += (mouse.targetY - mouse.y) * 0.04;
 
-      // Rotate orbiting satellites & compute laser streams
-      satellites.forEach((sat, i) => {
-        sat.angle += sat.speed * delta;
-        const x = Math.cos(sat.angle) * satelliteOrbitRadius;
-        const z = Math.sin(sat.angle) * satelliteOrbitRadius;
-        const y = Math.sin(sat.angle * 2 + i) * 0.6;
+      // Subtle camera parallax
+      camera.position.x = mouse.x * 1.8;
+      camera.position.y = 3.5 + mouse.y * 0.8;
+      camera.lookAt(0, -0.6, 0);
 
-        sat.mesh.position.set(x, y, z);
-        sat.mesh.rotation.x += delta * 0.8;
-        sat.mesh.rotation.y += delta * 1.2;
+      // Wave calculation across all vertices
+      const positionAttr = planeGeo.attributes.position;
+      const basePos = basePositions.array as Float32Array;
+      const currentPos = positionAttr.array as Float32Array;
 
-        // Update laser line vertices from satellite to center
-        const linePos = sat.laser.geometry.attributes.position as THREE.BufferAttribute;
-        linePos.setXYZ(0, x, y, z);
-        linePos.setXYZ(1, 0, 0, 0);
-        linePos.needsUpdate = true;
-        sat.laser.computeLineDistances();
+      for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        const x = basePos[i3];
+        const y = basePos[i3 + 1];
+        const z = basePos[i3 + 2];
 
-        // Animate data packet moving along laser
-        sat.packetProgress = (sat.packetProgress + delta * 0.7) % 1.0;
-        const packetX = THREE.MathUtils.lerp(x, 0, sat.packetProgress);
-        const packetY = THREE.MathUtils.lerp(y, 0, sat.packetProgress);
-        const packetZ = THREE.MathUtils.lerp(z, 0, sat.packetProgress);
-        sat.packet.position.set(packetX, packetY, packetZ);
-      });
+        // Complex undulating harmonic waves
+        const wave1 = Math.sin(x * 0.35 + elapsedTime * 1.1) * Math.cos(z * 0.35 + elapsedTime * 0.8) * 0.75;
+        const wave2 = Math.sin((x + z) * 0.22 + elapsedTime * 1.4) * 0.45;
+        const wave3 = Math.cos(Math.sqrt(x * x + z * z) * 0.28 - elapsedTime * 0.9) * 0.35;
 
-      // Slowly rotate particle field
-      particles.rotation.y = elapsed * 0.03;
+        // Interactive mouse gravity ripple
+        const dx = x - mouse.worldX;
+        const dz = z - mouse.worldZ;
+        const distToMouse = Math.sqrt(dx * dx + dz * dz);
+        const mouseRipple = Math.exp(-distToMouse * 0.22) * Math.sin(distToMouse * 1.2 - elapsedTime * 3) * 0.6;
 
-      // Mouse & scroll parallax
-      const scrollOffset = scrollY * 0.0012;
-      targetRotationY = mouseX * 0.45;
-      targetRotationX = mouseY * 0.3 + scrollOffset;
+        currentPos[i3 + 1] = y + wave1 + wave2 + wave3 + mouseRipple;
+      }
+      positionAttr.needsUpdate = true;
 
-      worldGroup.rotation.y += (targetRotationY - worldGroup.rotation.y) * 0.04;
-      worldGroup.rotation.x += (targetRotationX - worldGroup.rotation.x) * 0.04;
-
-      // Smooth camera drift with scroll
-      camera.position.y = 1.2 - scrollOffset * 0.8;
+      // Animate ambient cyber dust floating upward
+      const dustPos = dustGeo.attributes.position.array as Float32Array;
+      for (let i = 0; i < dustCount; i++) {
+        dustPos[i * 3 + 1] += dustSpeeds[i];
+        if (dustPos[i * 3 + 1] > 7) {
+          dustPos[i * 3 + 1] = -1.5;
+        }
+      }
+      dustGeo.attributes.position.needsUpdate = true;
 
       renderer.render(scene, camera);
     };
 
     animate();
 
-    // -------------------------------------------------------------
-    // CLEANUP
-    // -------------------------------------------------------------
+    // 5. Responsive Resize Handling
+    const handleResize = () => {
+      if (!container) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // 6. Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('resize', handleResize);
 
-      disposables.forEach((d) => d.dispose());
-      renderer.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
+      disposables.forEach((d) => {
+        try {
+          d.dispose();
+        } catch {
+          // ignore
+        }
+      });
+
+      if (renderer.domElement && renderer.domElement.parentNode) {
+        renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
+      renderer.dispose();
     };
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
-      style={{ opacity: 0.9 }}
+      className="absolute inset-0 w-full h-full pointer-events-none select-none overflow-hidden -z-10"
+      style={{ opacity: 0.85 }}
     />
   );
 }

@@ -58,8 +58,8 @@ export default function WelcomePage() {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col relative overflow-x-hidden selection:bg-sky-500/20 selection:text-sky-200">
-      {/* 3D Particle Canvas Background */}
-      <div className="opacity-60 pointer-events-none">
+      {/* 3D Interactive Wave Mesh Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
         <HeroCanvas3D />
       </div>
 
