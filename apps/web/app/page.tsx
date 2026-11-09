@@ -55,15 +55,15 @@ export default function WelcomePage() {
   return (
     <div className="min-h-screen bg-[#07050d] text-white flex flex-col relative overflow-hidden font-sans selection:bg-purple-500/30 selection:text-white">
       {/* 3D Organic Liquid Blob Canvas Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <HeroCanvas3D />
       </div>
 
       {/* Ambient Top-Left Purple Glow (Matches reference image) */}
-      <div className="absolute -top-32 -left-32 w-[650px] h-[650px] bg-purple-900/20 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="absolute -top-32 -left-32 w-[650px] h-[650px] bg-purple-900/20 rounded-full blur-[140px] pointer-events-none z-0" />
 
       {/* Ambient Top-Right Indigo Glow */}
-      <div className="absolute top-10 right-0 w-[450px] h-[450px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none -z-10" />
+      <div className="absolute top-10 right-0 w-[450px] h-[450px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none z-0" />
 
       {/* Top Navigation Bar */}
       <header className="h-20 px-8 md:px-16 flex items-center justify-between relative z-30 select-none">

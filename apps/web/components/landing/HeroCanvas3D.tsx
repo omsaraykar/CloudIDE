@@ -10,79 +10,80 @@ export function HeroCanvas3D() {
     const container = containerRef.current;
     if (!container) return;
 
-    // 1. Scene & Atmosphere (matches deep purple-obsidian from reference image)
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x08060f, 0.042);
-
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      container.clientWidth / container.clientHeight,
-      0.1,
-      100
-    );
-    camera.position.set(0, 0.4, 9.5);
-
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.35;
-    container.appendChild(renderer.domElement);
-
-    // Track disposables for clean cleanup
+    // Disposables tracker
     const disposables: { dispose: () => void }[] = [];
     const register = <T extends { dispose: () => void }>(item: T): T => {
       disposables.push(item);
       return item;
     };
 
-    // 2. Lighting Setup (Soft purple/violet key light, deep indigo rim light)
-    const ambientLight = new THREE.AmbientLight(0x181028, 1.6);
+    // 1. Scene & Camera Setup
+    const scene = new THREE.Scene();
+
+    const getWidth = () => container.clientWidth || window.innerWidth;
+    const getHeight = () => container.clientHeight || window.innerHeight;
+
+    const camera = new THREE.PerspectiveCamera(42, getWidth() / getHeight(), 0.1, 100);
+    camera.position.set(0, 0.1, 9.2);
+
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance',
+    });
+    renderer.setSize(getWidth(), getHeight());
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.35;
+    container.appendChild(renderer.domElement);
+
+    // 2. Cinematic Lighting Setup (Soft Violet Satin & Indigo Rim, matching reference)
+    const ambientLight = new THREE.AmbientLight(0x1a0f2e, 1.8);
     scene.add(ambientLight);
 
-    // Top-left purple key light
-    const keyLight = new THREE.DirectionalLight(0xc084fc, 3.0);
+    // Top-left purple key light (soft crease illumination)
+    const keyLight = new THREE.DirectionalLight(0xc084fc, 3.8);
     keyLight.position.set(-5, 6, 4.5);
     scene.add(keyLight);
 
-    // Top-right indigo rim light
-    const rimLight = new THREE.DirectionalLight(0x818cf8, 2.2);
-    rimLight.position.set(6, 4.5, -2);
-    scene.add(rimLight);
+    // Top-right indigo rim light (crisp silhouette)
+    const rimLightRight = new THREE.DirectionalLight(0x818cf8, 3.2);
+    rimLightRight.position.set(6, 4.5, -2);
+    scene.add(rimLightRight);
 
-    // Front-bottom fill light
-    const fillLight = new THREE.PointLight(0xa855f7, 2.0, 15);
-    fillLight.position.set(0, -3.5, 3.5);
+    // Left purple rim light
+    const rimLightLeft = new THREE.DirectionalLight(0xa855f7, 2.8);
+    rimLightLeft.position.set(-6, 3.5, -2.5);
+    scene.add(rimLightLeft);
+
+    // Front-bottom fill light (illuminates lower curves)
+    const fillLight = new THREE.PointLight(0x7c3aed, 2.2, 20);
+    fillLight.position.set(0, -3.5, 4.5);
     scene.add(fillLight);
 
-    // 3. Central Organic 3D Liquid Undulating Blob (as shown in reference image)
-    const sphereGeo = register(new THREE.SphereGeometry(3.6, 128, 128));
+    // 3. Central 3D Organic Liquid Model (Three.js)
+    const sphereGeo = register(new THREE.SphereGeometry(3.9, 160, 160));
 
-    // Custom uniforms for GPU simplex noise displacement
     const customUniforms = {
       uTime: { value: 0 },
-      uNoiseFreq: { value: 0.48 },
-      uNoiseSpeed: { value: 0.35 },
-      uDisplacement: { value: 0.85 },
+      uNoiseFreq: { value: 0.38 },
+      uNoiseSpeed: { value: 0.26 },
+      uDisplacement: { value: 0.58 },
     };
 
     const blobMat = register(
       new THREE.MeshPhysicalMaterial({
-        color: 0x160e26,
-        emissive: 0x120822,
-        emissiveIntensity: 0.3,
-        roughness: 0.48, // Velvety satin matte finish
-        metalness: 0.12,
-        clearcoat: 0.35,
-        clearcoatRoughness: 0.25,
+        color: 0x241242, // Rich dark satin violet
+        emissive: 0x140826, // Subtle internal purple glow
+        emissiveIntensity: 0.45,
+        roughness: 0.56, // Satin / velvet matte finish
+        metalness: 0.10,
+        clearcoat: 0.25, // Gentle sheen
+        clearcoatRoughness: 0.35,
       })
     );
 
-    // Hook custom 3D Simplex noise directly into the vertex shader
+    // Custom Simplex noise displacement shader hook
     blobMat.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = customUniforms.uTime;
       shader.uniforms.uNoiseFreq = customUniforms.uNoiseFreq;
@@ -147,63 +148,71 @@ export function HeroCanvas3D() {
 
         float getDisplacement(vec3 p) {
           float t = uTime * uNoiseSpeed;
-          float n1 = snoise(p * uNoiseFreq + vec3(0.0, t * 0.8, t * 0.6)) * 0.65;
-          float n2 = snoise(p * (uNoiseFreq * 2.1) - vec3(t * 0.7, 0.0, t * 0.5)) * 0.35;
+          float n1 = snoise(p * uNoiseFreq + vec3(0.0, t * 0.7, t * 0.5)) * 0.65;
+          float n2 = snoise(p * (uNoiseFreq * 2.2) - vec3(t * 0.6, 0.0, t * 0.4)) * 0.35;
           return (n1 + n2) * uDisplacement;
         }
       ` + shader.vertexShader;
 
       shader.vertexShader = shader.vertexShader.replace(
+        '#include <defaultnormal_vertex>',
+        `
+        // Compute displacement & analytical normals with orthogonal tangent basis
+        vec3 tNormal = normal;
+        vec3 tangent = normalize(abs(tNormal.y) < 0.999 ? cross(tNormal, vec3(0.0, 1.0, 0.0)) : cross(tNormal, vec3(1.0, 0.0, 0.0)));
+        vec3 bitangent = cross(tNormal, tangent);
+        float eps = 0.02;
+
+        vec3 p0 = position + tNormal * getDisplacement(position);
+        vec3 p1 = position + tangent * eps + tNormal * getDisplacement(position + tangent * eps);
+        vec3 p2 = position + bitangent * eps + tNormal * getDisplacement(position + bitangent * eps);
+
+        vec3 computedNormal = normalize(cross(p1 - p0, p2 - p0));
+        vec3 transformedNormal = computedNormal;
+        #ifdef USE_TANGENT
+          vec3 transformedTangent = objectTangent;
+        #endif
+        `
+      );
+
+      shader.vertexShader = shader.vertexShader.replace(
         '#include <begin_vertex>',
         `
-        #include <begin_vertex>
-
-        float disp = getDisplacement(position);
-        transformed += normal * disp;
-
-        // Recalculate normal using tangent offsets for smooth lighting
-        float eps = 0.02;
-        vec3 v1 = position + vec3(eps, 0.0, 0.0);
-        vec3 v2 = position + vec3(0.0, eps, 0.0);
-        vec3 p1 = v1 + normal * getDisplacement(v1);
-        vec3 p2 = v2 + normal * getDisplacement(v2);
-        vec3 newNormal = normalize(cross(p1 - transformed, p2 - transformed));
-        if (dot(newNormal, normal) > 0.0) {
-          transformedNormal = normalMatrix * newNormal;
-        }
+        vec3 transformed = p0;
         `
       );
     };
 
     const blobMesh = new THREE.Mesh(sphereGeo, blobMat);
-    // Position blob so upper organic crest rises from bottom center
-    blobMesh.position.set(0, -2.6, 0.4);
+    // Position blob so upper organic crest rises from bottom center, peaking just below CTA
+    blobMesh.position.set(0, -4.1, 0.4);
+    blobMesh.scale.set(1.4, 1.05, 1.25);
     scene.add(blobMesh);
 
-    // 4. Subtle Cosmos Starfield / Dust Specks (scattered like in the image)
-    const starCount = 220;
+    // 4. Subtle Ambient Cosmic Dust / Starfield
+    const starCount = 260;
     const starGeo = register(new THREE.BufferGeometry());
     const starPositions = new Float32Array(starCount * 3);
 
     for (let i = 0; i < starCount; i++) {
-      starPositions[i * 3] = (Math.random() - 0.5) * 22;
+      starPositions[i * 3] = (Math.random() - 0.5) * 24;
       starPositions[i * 3 + 1] = (Math.random() - 0.5) * 16;
-      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 14 - 1.5;
+      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 14 - 1.0;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
 
     const starMat = register(
       new THREE.PointsMaterial({
-        size: 0.035,
-        color: 0xddd6fe,
+        size: 0.04,
+        color: 0xe0e7ff,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.65,
       })
     );
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // 5. Mouse Parallax Tracking
+    // 5. Mouse Interaction Tracking
     const mouse = {
       targetX: 0,
       targetY: 0,
@@ -221,31 +230,31 @@ export function HeroCanvas3D() {
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
 
-    // 6. Animation Loop
+    // 6. Smooth Animation Loop
     let animationFrameId: number;
-    const clock = new THREE.Clock();
+    let startTime = performance.now();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      const elapsed = clock.getElapsedTime();
+      const elapsed = (performance.now() - startTime) * 0.001;
       customUniforms.uTime.value = elapsed;
 
-      // Smooth mouse tracking with inertia
+      // Mouse tracking with inertia
       mouse.currentX += (mouse.targetX - mouse.currentX) * 0.04;
       mouse.currentY += (mouse.targetY - mouse.currentY) * 0.04;
 
-      // Subtle camera parallax
-      camera.position.x = mouse.currentX * 0.5;
-      camera.position.y = 0.4 + mouse.currentY * 0.35;
+      // Camera parallax
+      camera.position.x = mouse.currentX * 0.6;
+      camera.position.y = 0.3 + mouse.currentY * 0.35;
       camera.lookAt(0, -0.4, 0);
 
-      // Slow organic rotation of the blob
-      blobMesh.rotation.y = elapsed * 0.06 + mouse.currentX * 0.2;
-      blobMesh.rotation.x = mouse.currentY * 0.15;
+      // Model rotation
+      blobMesh.rotation.y = elapsed * 0.07 + mouse.currentX * 0.25;
+      blobMesh.rotation.x = mouse.currentY * 0.18;
 
-      // Gentle twinkle in starfield
-      starMesh.rotation.y = elapsed * 0.008;
+      // Gentle starfield drift
+      starMesh.rotation.y = elapsed * 0.01;
 
       renderer.render(scene, camera);
     };
@@ -255,8 +264,8 @@ export function HeroCanvas3D() {
     // 7. Responsive Resize Handler
     const handleResize = () => {
       if (!container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
+      const w = getWidth();
+      const h = getHeight();
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -287,7 +296,7 @@ export function HeroCanvas3D() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 w-full h-full pointer-events-none select-none overflow-hidden -z-10"
+      className="absolute inset-0 w-full h-full pointer-events-none select-none overflow-hidden z-0"
     />
   );
 }
