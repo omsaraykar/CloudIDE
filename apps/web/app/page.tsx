@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-  ArrowUpRight,
   ChevronDown,
   Terminal,
   ShieldCheck,
@@ -112,7 +111,7 @@ export default function WelcomePage() {
       </header>
 
       {/* Main Hero Section */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 pt-12 md:pt-16 pb-20 flex flex-col items-center justify-between text-center relative z-20">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-6 pt-16 md:pt-24 pb-24 flex flex-col items-center justify-start text-center relative z-20">
         {/* Title & Subtitle */}
         <div className="flex flex-col items-center">
           <motion.h1
@@ -164,53 +163,6 @@ export default function WelcomePage() {
                 </button>
               </div>
             </form>
-          </motion.div>
-        </div>
-
-        {/* Floating Glassmorphic Cards Hovering Over 3D Liquid Blob (Matches reference image) */}
-        <div className="w-full flex items-end justify-between mt-12 md:mt-16 pointer-events-none select-none relative z-10 px-2 sm:px-8">
-          {/* Left Floating Card: Container Pairs / Unparalleled Access */}
-          <motion.div
-            initial={{ opacity: 0, x: -20, y: 15 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="p-4 rounded-2xl bg-[#140e26]/60 border border-white/[0.1] backdrop-blur-xl shadow-2xl w-48 sm:w-56 text-left pointer-events-auto hover:border-purple-400/30 transition-all"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-medium text-zinc-400">Container Pairs</span>
-              <div className="w-5 h-5 rounded-full bg-white text-zinc-950 flex items-center justify-center shadow-sm">
-                <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
-              </div>
-            </div>
-            <h4 className="text-xs font-semibold text-white leading-snug">
-              Unparalleled <br />
-              Market Access
-            </h4>
-            <div className="text-[10px] font-mono text-zinc-500 text-right mt-1">
-              46%
-            </div>
-          </motion.div>
-
-          {/* Right Floating Card: 96% Metric + Progress Bar */}
-          <motion.div
-            initial={{ opacity: 0, x: 20, y: 15 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.35 }}
-            className="p-4 rounded-2xl bg-[#140e26]/60 border border-white/[0.1] backdrop-blur-xl shadow-2xl w-48 sm:w-56 text-left pointer-events-auto hover:border-purple-400/30 transition-all"
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-medium text-zinc-400">Trading Pairs</span>
-              <div className="w-5 h-5 rounded-full bg-white text-zinc-950 flex items-center justify-center shadow-sm">
-                <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
-              </div>
-            </div>
-            <div className="text-2xl font-bold tracking-tight text-white mt-1">
-              96%
-            </div>
-            {/* Progress Bar (Matches Reference Image) */}
-            <div className="w-full h-1 bg-white/20 rounded-full mt-3 overflow-hidden">
-              <div className="h-full bg-white rounded-full w-[96%]" />
-            </div>
           </motion.div>
         </div>
       </main>
