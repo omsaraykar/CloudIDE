@@ -179,6 +179,12 @@ export function HeroCanvas3D() {
 
     window.addEventListener('mousemove', handleMouseMove);
 
+    let scrollY = 0;
+    const handleScroll = () => {
+      scrollY = window.scrollY || 0;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
     // Resize Handler
     const handleResize = () => {
       if (!container) return;
@@ -214,12 +220,16 @@ export function HeroCanvas3D() {
       const scale = 1 + Math.sin(elapsedTime * 1.5) * 0.04;
       coreWireMesh.scale.set(scale, scale, scale);
 
-      // Smooth mouse lerp
+      // Smooth mouse & scroll parallax
+      const scrollOffset = scrollY * 0.0015;
       targetRotationY = mouseX * 0.6;
-      targetRotationX = mouseY * 0.4;
+      targetRotationX = mouseY * 0.4 + scrollOffset;
 
       worldGroup.rotation.y += (targetRotationY - worldGroup.rotation.y) * 0.05;
       worldGroup.rotation.x += (targetRotationX - worldGroup.rotation.x) * 0.05;
+
+      // Subtle vertical camera drift with scroll
+      camera.position.y = 0.5 - scrollOffset * 0.5;
 
       renderer.render(scene, camera);
     };
@@ -230,6 +240,7 @@ export function HeroCanvas3D() {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
       renderer.dispose();
       coreGeometry.dispose();
       coreWireMaterial.dispose();
@@ -251,7 +262,7 @@ export function HeroCanvas3D() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
       style={{ opacity: 0.85 }}
     />
   );
