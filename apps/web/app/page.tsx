@@ -6,15 +6,11 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
+  ArrowUpRight,
+  ChevronDown,
   Terminal,
-  ArrowRight,
-  Sparkles,
-  Layers,
-  Code2,
-  Globe,
   ShieldCheck,
-  Cpu,
-  Boxes,
+  Zap,
 } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -27,6 +23,7 @@ export default function WelcomePage() {
   const router = useRouter();
   const [username, setUsername] = useState('developer');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [systemStatus, setSystemStatus] = useState<{ dockerAvailable: boolean; platform: string }>({
     dockerAvailable: false,
     platform: 'unknown',
@@ -40,8 +37,8 @@ export default function WelcomePage() {
     api.getSystemStatus().then(setSystemStatus).catch(console.error);
   }, []);
 
-  const handleEnterPlayground = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEnterPlayground = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const clean = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'developer';
 
     try {
@@ -57,218 +54,165 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col relative overflow-x-hidden selection:bg-sky-500/20 selection:text-sky-200">
-      {/* 3D Interactive Wave Mesh Background */}
+    <div className="min-h-screen bg-[#07050d] text-white flex flex-col relative overflow-hidden font-sans selection:bg-purple-500/30 selection:text-white">
+      {/* 3D Organic Liquid Blob Canvas Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
         <HeroCanvas3D />
       </div>
 
-      {/* Subtle Ambient Radial Lighting */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[500px] bg-gradient-to-b from-sky-500/10 via-indigo-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
+      {/* Ambient Top-Left Purple Glow (Matches reference image) */}
+      <div className="absolute -top-32 -left-32 w-[650px] h-[650px] bg-purple-900/20 rounded-full blur-[140px] pointer-events-none -z-10" />
 
-      {/* Subtle Dot Grid */}
-      <div
-        className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none -z-10 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]"
-      />
+      {/* Ambient Top-Right Indigo Glow */}
+      <div className="absolute top-10 right-0 w-[450px] h-[450px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none -z-10" />
 
-      {/* Top Navbar */}
-      <header className="h-14 border-b border-white/[0.08] bg-[#09090b]/80 backdrop-blur-md px-6 md:px-12 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-white/[0.12] flex items-center justify-center text-white font-mono font-bold text-xs shadow-sm group-hover:border-sky-500/50 transition-colors">
-              <span className="text-sky-400 font-semibold">&gt;_</span>
-            </div>
-            <span className="font-semibold text-sm tracking-tight text-white flex items-center gap-1.5">
-              CloudIDE
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/[0.06] border border-white/[0.08] text-zinc-400 font-normal">
-                v2.0
-              </span>
-            </span>
+      {/* Top Navigation Bar */}
+      <header className="h-20 px-8 md:px-16 flex items-center justify-between relative z-30 select-none">
+        {/* Brand Logo */}
+        <Link href="/" className="text-lg font-bold tracking-tight text-white hover:opacity-90 transition-opacity">
+          CloudIDE
+        </Link>
+
+        {/* Center Nav Links */}
+        <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-zinc-300">
+          <Link href="/" className="hover:text-white transition-colors">
+            About
           </Link>
-        </div>
-
-        {/* Status Pill */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-zinc-300">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                systemStatus.dockerAvailable ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50' : 'bg-sky-400'
-              }`}
-            />
-            <span className="text-[11px] font-mono text-zinc-400">
-              {systemStatus.dockerAvailable ? 'Docker Engine Connected' : 'Engine Ready'}
-            </span>
+          <div className="flex items-center gap-1 cursor-pointer hover:text-white transition-colors">
+            <span>Playground</span>
+            <ChevronDown className="w-3 h-3 text-zinc-400" />
           </div>
+          <Link href="#architecture" className="hover:text-white transition-colors">
+            Architecture
+          </Link>
+          <Link href="#faq" className="hover:text-white transition-colors">
+            FAQ
+          </Link>
+          <div className="flex items-center gap-1 cursor-pointer hover:text-white transition-colors text-zinc-400">
+            <span>ENG</span>
+            <ChevronDown className="w-3 h-3" />
+          </div>
+        </nav>
+
+        {/* Right Auth / Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => handleEnterPlayground()}
+            className="text-xs font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-all"
+          >
+            Login
+          </button>
+          <button
+            onClick={() => handleEnterPlayground()}
+            className="text-xs font-medium text-white px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 shadow-lg shadow-purple-500/25 transition-all hover:scale-[1.02] active:scale-95"
+          >
+            Sign up
+          </button>
         </div>
       </header>
 
-      {/* Main Hero Container */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-16 md:py-24 flex flex-col items-center justify-center gap-10 relative z-10 text-center">
-        {/* Pill Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-white/[0.1] text-[11px] font-medium text-zinc-300 backdrop-blur-md shadow-sm"
-        >
-          <Sparkles className="w-3 h-3 text-sky-400" />
-          <span>Next-Generation Cloud Developer Sandbox</span>
-        </motion.div>
-
-        {/* Hero Title & Subtitle */}
-        <div className="flex flex-col items-center gap-4 max-w-3xl">
+      {/* Main Hero Section */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-6 pt-12 md:pt-16 pb-20 flex flex-col items-center justify-between text-center relative z-20">
+        {/* Title & Subtitle */}
+        <div className="flex flex-col items-center">
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.05 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.1]"
+            transition={{ duration: 0.6 }}
+            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.06] max-w-3xl"
           >
-            Instant cloud playground <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 via-zinc-400 to-zinc-500">
-              for modern developers.
-            </span>
+            Elevate Your <br />
+            Coding Experience
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-sm sm:text-base text-zinc-400 max-w-xl leading-relaxed"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-xs sm:text-sm md:text-base text-zinc-400 max-w-lg mt-5 leading-relaxed font-light"
           >
-            Launch an isolated environment in seconds with root Bash terminal access, Monaco Editor, and instant live web preview.
+            Unlock your development potential in a fully isolated environment, powered by dedicated containers.
           </motion.p>
+
+          {/* Center Capsule CTA (Exact White Pill Button from Reference) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-8 relative z-30"
+          >
+            <form onSubmit={handleEnterPlayground} className="flex items-center justify-center">
+              <div className="flex items-center gap-2 p-1.5 bg-[#120d22]/90 border border-white/[0.12] backdrop-blur-xl rounded-full shadow-2xl hover:border-purple-500/40 transition-all max-w-sm w-full">
+                <span className="text-xs text-purple-300/80 font-mono pl-3.5 select-none">@</span>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="developer"
+                  className="bg-transparent text-xs text-white placeholder-zinc-500 outline-none flex-1 min-w-0 font-mono"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-white hover:bg-zinc-100 text-zinc-950 font-semibold text-xs px-6 py-2.5 rounded-full transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2 shrink-0 cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  ) : null}
+                  <span>Sign Up & Code</span>
+                </button>
+              </div>
+            </form>
+          </motion.div>
         </div>
 
-        {/* Linear/Raycast Style Launch Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="w-full max-w-md p-5 rounded-2xl bg-[#0c0c0e]/95 border border-white/[0.1] shadow-2xl backdrop-blur-xl flex flex-col gap-4 text-left relative"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
-              <Terminal className="w-3.5 h-3.5 text-zinc-400" />
-              Developer Login
-            </span>
-            <span className="text-[11px] text-zinc-500 font-mono">root / bash</span>
-          </div>
-
-          <form onSubmit={handleEnterPlayground} className="flex flex-col gap-3">
-            <div className="relative flex items-center">
-              <span className="absolute left-3.5 text-xs text-zinc-500 font-mono select-none">@</span>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="username"
-                required
-                className="w-full bg-[#141418] border border-white/[0.08] focus:border-zinc-500 focus:ring-1 focus:ring-zinc-600 rounded-xl pl-8 pr-3.5 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-all font-mono"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-xs transition-colors shadow-sm cursor-pointer disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                  <span>Preparing Environment...</span>
-                </>
-              ) : (
-                <>
-                  <span>Enter Playground</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Quick Specs */}
-          <div className="flex items-center justify-between pt-3 border-t border-white/[0.06] text-[11px] text-zinc-400">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
-              Isolated Sandbox
-            </span>
-            <span className="text-zinc-600">•</span>
-            <span className="flex items-center gap-1">
-              <Terminal className="w-3.5 h-3.5 text-zinc-500" />
-              Root Shell
-            </span>
-            <span className="text-zinc-600">•</span>
-            <span className="flex items-center gap-1">
-              <Globe className="w-3.5 h-3.5 text-zinc-500" />
-              HTML Preview
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Minimalist IDE Preview Mockup */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="w-full max-w-4xl mt-4 rounded-xl border border-white/[0.08] bg-[#0c0c0e] shadow-2xl overflow-hidden text-left font-mono"
-        >
-          {/* Mock Window Header */}
-          <div className="h-9 px-4 bg-[#121215] border-b border-white/[0.06] flex items-center justify-between text-xs text-zinc-400">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-              <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-              <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-              <span className="text-[11px] text-zinc-500 ml-2">cloudide · workspace</span>
-            </div>
-            <div className="flex items-center gap-3 text-[11px]">
-              <span className="text-zinc-500">bash</span>
-              <span className="text-emerald-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> connected
-              </span>
-            </div>
-          </div>
-
-          {/* Mock Editor + Terminal split */}
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.06] text-xs">
-            {/* Explorer snippet */}
-            <div className="p-3 bg-[#0c0c0e] text-zinc-400 space-y-1.5 hidden md:block">
-              <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold mb-2">EXPLORER</div>
-              <div className="flex items-center gap-1.5 text-zinc-300">
-                <Code2 className="w-3.5 h-3.5 text-sky-400" />
-                <span>index.html</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-zinc-400">
-                <Code2 className="w-3.5 h-3.5 text-amber-400" />
-                <span>app.js</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-zinc-500">
-                <Layers className="w-3.5 h-3.5 text-indigo-400" />
-                <span>styles.css</span>
+        {/* Floating Glassmorphic Cards Hovering Over 3D Liquid Blob (Matches reference image) */}
+        <div className="w-full flex items-end justify-between mt-12 md:mt-16 pointer-events-none select-none relative z-10 px-2 sm:px-8">
+          {/* Left Floating Card: Container Pairs / Unparalleled Access */}
+          <motion.div
+            initial={{ opacity: 0, x: -20, y: 15 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="p-4 rounded-2xl bg-[#140e26]/60 border border-white/[0.1] backdrop-blur-xl shadow-2xl w-48 sm:w-56 text-left pointer-events-auto hover:border-purple-400/30 transition-all"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-medium text-zinc-400">Container Pairs</span>
+              <div className="w-5 h-5 rounded-full bg-white text-zinc-950 flex items-center justify-center shadow-sm">
+                <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
               </div>
             </div>
+            <h4 className="text-xs font-semibold text-white leading-snug">
+              Unparalleled <br />
+              Market Access
+            </h4>
+            <div className="text-[10px] font-mono text-zinc-500 text-right mt-1">
+              46%
+            </div>
+          </motion.div>
 
-            {/* Code lines */}
-            <div className="p-4 bg-[#09090b] col-span-2 space-y-1 text-zinc-300 leading-relaxed overflow-x-auto">
-              <div className="flex items-center gap-4 text-zinc-600">
-                <span className="w-4 select-none">1</span>
-                <span className="text-zinc-200">&lt;<span className="text-sky-400">html</span> <span className="text-amber-400">lang</span>=<span className="text-emerald-400">&quot;en&quot;</span>&gt;</span>
-              </div>
-              <div className="flex items-center gap-4 text-zinc-600">
-                <span className="w-4 select-none">2</span>
-                <span className="text-zinc-200 pl-4">&lt;<span className="text-sky-400">h1</span>&gt;<span className="text-zinc-100">Hello from CloudIDE!</span>&lt;/<span className="text-sky-400">h1</span>&gt;</span>
-              </div>
-              <div className="flex items-center gap-4 text-zinc-600">
-                <span className="w-4 select-none">3</span>
-                <span className="text-zinc-200">&lt;/<span className="text-sky-400">html</span>&gt;</span>
-              </div>
-              <div className="mt-3 pt-3 border-t border-white/[0.06] text-[11px] text-zinc-400 flex items-center gap-2">
-                <span className="text-sky-400">cloudide:~#</span>
-                <span className="text-zinc-300">apk add nodejs python3</span>
-                <span className="w-2 h-3.5 bg-zinc-400 animate-pulse inline-block ml-1" />
+          {/* Right Floating Card: 96% Metric + Progress Bar */}
+          <motion.div
+            initial={{ opacity: 0, x: 20, y: 15 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.35 }}
+            className="p-4 rounded-2xl bg-[#140e26]/60 border border-white/[0.1] backdrop-blur-xl shadow-2xl w-48 sm:w-56 text-left pointer-events-auto hover:border-purple-400/30 transition-all"
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-medium text-zinc-400">Trading Pairs</span>
+              <div className="w-5 h-5 rounded-full bg-white text-zinc-950 flex items-center justify-center shadow-sm">
+                <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
               </div>
             </div>
-          </div>
-        </motion.div>
+            <div className="text-2xl font-bold tracking-tight text-white mt-1">
+              96%
+            </div>
+            {/* Progress Bar (Matches Reference Image) */}
+            <div className="w-full h-1 bg-white/20 rounded-full mt-3 overflow-hidden">
+              <div className="h-full bg-white rounded-full w-[96%]" />
+            </div>
+          </motion.div>
+        </div>
       </main>
     </div>
   );
