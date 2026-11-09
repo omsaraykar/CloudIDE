@@ -1,0 +1,9 @@
+node_modules
+.pnpm-store
+dist
+.next
+workspaces_storage
+.env
+.env.local
+.DS_Store
+*.log

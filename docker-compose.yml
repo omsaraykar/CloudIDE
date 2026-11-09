@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cloudide-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: cloudide
+      POSTGRES_PASSWORD: cloudide_password
+      POSTGRES_DB: cloudide_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cloudide -d cloudide_db']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: cloudide-server
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      PORT: 4000
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://cloudide:cloudide_password@postgres:5432/cloudide_db?schema=public
+      WORKSPACES_DIR: /app/workspaces_storage
+      DOCKER_IMAGE: node:20-alpine
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - workspaces_data:/app/workspaces_storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: cloudide-web
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NEXT_PUBLIC_WS_URL: http://localhost:4000
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
+  workspaces_data:
