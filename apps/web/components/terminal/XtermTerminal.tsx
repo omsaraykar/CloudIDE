@@ -153,7 +153,7 @@ export function XtermTerminal() {
   }, [workspace]);
 
   return (
-    <div className="h-full w-full bg-[#05070a] px-3.5 py-2.5 overflow-hidden flex flex-col">
+    <div className="h-full w-full bg-[#09090b] px-3.5 py-2.5 overflow-hidden flex flex-col">
       <div ref={terminalRef} className="h-full w-full" />
     </div>
   );
