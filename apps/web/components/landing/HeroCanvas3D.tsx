@@ -189,24 +189,28 @@ export function HeroCanvas3D() {
     blobMesh.scale.set(1.4, 1.05, 1.25);
     scene.add(blobMesh);
 
-    // 4. Subtle Ambient Cosmic Dust / Starfield
-    const starCount = 260;
+    // 4. Subtle Ambient Cosmic Dust / Starfield (Strictly in deep background behind 3D model)
+    const starCount = 280;
     const starGeo = register(new THREE.BufferGeometry());
     const starPositions = new Float32Array(starCount * 3);
 
     for (let i = 0; i < starCount; i++) {
-      starPositions[i * 3] = (Math.random() - 0.5) * 24;
-      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 16;
-      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 14 - 1.0;
+      starPositions[i * 3] = (Math.random() - 0.5) * 30;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      // Model center is at z = 0.4 with radius ~4.5 (reaches z ~ -4.2 at back).
+      // Placing stars strictly between z = -6.5 and z = -18.0 guarantees they are ALWAYS behind the model.
+      starPositions[i * 3 + 2] = -6.5 - Math.random() * 12.0;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
 
     const starMat = register(
       new THREE.PointsMaterial({
-        size: 0.04,
-        color: 0xe0e7ff,
+        size: 0.045,
+        color: 0xddd6fe,
         transparent: true,
         opacity: 0.65,
+        depthTest: true,
+        depthWrite: false,
       })
     );
     const starMesh = new THREE.Points(starGeo, starMat);
@@ -270,8 +274,8 @@ export function HeroCanvas3D() {
       blobMesh.rotation.y = currentRotY;
       blobMesh.rotation.x = currentRotX;
 
-      // Gentle starfield drift
-      starMesh.rotation.y = elapsed * 0.01;
+      // Rotate starfield in 2D plane (Z-axis) so depth never shifts forward
+      starMesh.rotation.z = elapsed * 0.005;
 
       renderer.render(scene, camera);
     };
