@@ -9,6 +9,7 @@ interface TerminalSession {
   workspaceId: string;
   process?: ChildProcess;
   stream?: NodeJS.ReadWriteStream;
+  exec?: any;
   type: 'docker' | 'process';
   createdAt: number;
 }
@@ -57,6 +58,15 @@ export class TerminalService {
           Tty: true,
         });
 
+        // Set initial PTY dimensions immediately
+        const initialCols = Math.max(10, cols || 80);
+        const initialRows = Math.max(5, rows || 24);
+        try {
+          await exec.resize({ h: initialRows, w: initialCols });
+        } catch (resizeErr) {
+          console.warn('[TerminalService] Failed initial exec.resize:', resizeErr);
+        }
+
         stream.on('data', (chunk: Buffer) => {
           onData(sessionId, chunk.toString('utf-8'));
         });
@@ -70,6 +80,7 @@ export class TerminalService {
           sessionId,
           workspaceId: workspace.id,
           stream,
+          exec,
           type: 'docker',
           createdAt: Date.now(),
         });
@@ -153,10 +164,20 @@ export class TerminalService {
     }
   }
 
-  public resize(sessionId: string, cols: number, rows: number): void {
+  public async resize(sessionId: string, cols: number, rows: number): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (!session) return;
-    // For pty or docker resize if supported
+
+    const safeCols = Math.max(10, Math.floor(cols));
+    const safeRows = Math.max(5, Math.floor(rows));
+
+    if (session.type === 'docker' && session.exec) {
+      try {
+        await session.exec.resize({ h: safeRows, w: safeCols });
+      } catch (err) {
+        // exec may have closed
+      }
+    }
   }
 
   public closeSession(sessionId: string): void {

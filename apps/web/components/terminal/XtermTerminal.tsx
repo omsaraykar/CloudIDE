@@ -78,6 +78,16 @@ export function XtermTerminal() {
     const onCreated = ({ sessionId }: { sessionId: string }) => {
       sessionIdRef.current = sessionId;
       console.log('[Xterm] Session initialized:', sessionId);
+      setTimeout(() => {
+        try {
+          fitAddon.fit();
+          socket.emit('terminal:resize', {
+            sessionId,
+            cols: term.cols,
+            rows: term.rows,
+          });
+        } catch {}
+      }, 60);
     };
 
     const onData = ({ sessionId, data }: { sessionId: string; data: string }) => {
