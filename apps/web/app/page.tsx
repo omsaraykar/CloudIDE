@@ -27,6 +27,7 @@ export default function WelcomePage() {
   const [username, setUsername] = useState('developer');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [systemStatus, setSystemStatus] = useState<{ dockerAvailable: boolean; platform: string }>({
     dockerAvailable: false,
     platform: 'unknown',
@@ -38,6 +39,12 @@ export default function WelcomePage() {
       setUsername(saved);
     }
     api.getSystemStatus().then(setSystemStatus).catch(console.error);
+
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const handleEnterPlayground = async (e?: React.FormEvent) => {
@@ -80,7 +87,9 @@ export default function WelcomePage() {
       <div className="fixed top-10 right-0 w-[450px] h-[450px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none z-0" />
 
       {/* Fixed Top Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 h-24 px-8 md:px-16 flex items-center justify-between z-40 bg-transparent select-none">
+      <header className={`fixed top-0 left-0 right-0 h-24 px-8 md:px-16 flex items-center justify-between z-40 transition-colors duration-300 ${
+        scrolled ? 'bg-[#070510]/80 backdrop-blur-xl border-b border-white/[0.08]' : 'bg-transparent border-b border-transparent'
+      } select-none`}>
         {/* Wordmark */}
         <Link href="#home" className="text-xl md:text-2xl font-black tracking-[0.25em] text-white hover:opacity-80 transition-opacity uppercase font-mono">
           CLOUDIDE
@@ -311,7 +320,7 @@ export default function WelcomePage() {
         </section>
 
         {/* SECTION 2: FEATURES & WORKFLOW */}
-        <section id="features" className="min-h-screen py-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center relative z-20">
+        <section id="features" className="min-h-screen pt-36 pb-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center relative z-20">
           <div className="max-w-2xl mb-12">
             <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
               [ 01 — Developer Experience ]

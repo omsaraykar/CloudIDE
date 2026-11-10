@@ -412,16 +412,22 @@ export function HeroCanvas3D() {
       const time = now - startTime;
       updateMouse3D();
 
-      // Scroll Progress for Physics Morphing (Hero cluster -> Gravity drop -> Heart form -> Fly)
+      // Scroll Progress for Physics Morphing: Exactly 2 Animations
+      // 1. Hero floating center cluster (stays centered throughout browsing until reaching website finish)
+      // 2. Falling to the ground animation (activates only when the website finishes near the bottom)
       const scrollY = window.scrollY || 0;
       const vh = window.innerHeight || 1;
-      const progress = scrollY / vh;
+      const docHeight = document.documentElement.scrollHeight || vh * 2.2;
+      const maxScroll = Math.max(1, docHeight - vh);
+      const scrollRatio = clamp01(scrollY / maxScroll);
 
-      const heroF = 1 - smoothstep(0.2, 0.65, progress);
-      const dropRaw = smoothstep(0.3, 0.75, progress);
-      const flyF = smoothstep(1.35, 1.8, progress);
-      const shapeF = smoothstep(0.7, 1.1, progress) * (1 - smoothstep(1.4, 1.8, progress));
-      const dropF = dropRaw * (1 - smoothstep(0.75, 1.05, progress));
+      // Hero floating cluster is active throughout browsing until scrolling near the end
+      const heroF = 1 - smoothstep(0.68, 0.92, scrollRatio);
+
+      // Falling to the ground animation activates only when the website finishes
+      const dropF = smoothstep(0.70, 0.95, scrollRatio);
+      const flyF = 0;
+      const shapeF = 0;
 
       const entranceT = easeOutCubic(clamp01((time - entranceStart) / 2.2));
       const attractionBoost = lerp(7.5, 1, entranceT);
@@ -461,25 +467,9 @@ export function HeroCanvas3D() {
         }
 
         // Gravity Drop Stage
+        // Falling to Ground Stage (Gravity acceleration)
         if (dropF > 0.001) {
-          b.velocity.y -= 0.011 * dropF;
-        }
-
-        // Heart Shape Stage
-        if (shapeF > 0.001) {
-          const k = 0.06 * shapeF;
-          b.velocity.x += (b.shapeTarget.x - b.position.x) * k;
-          b.velocity.y += (b.shapeTarget.y - b.position.y) * k;
-          b.velocity.z += (b.shapeTarget.z - b.position.z) * k;
-        }
-
-        // Fly Through Stage
-        if (flyF > 0.001) {
-          const stagger = (b.id * 0.6180339887) % 1;
-          const local = smoothstep(stagger * 0.55, stagger * 0.55 + 0.45, flyF);
-          b.velocity.z += 0.05 * local;
-          b.velocity.x += b.position.x * 0.006 * local;
-          b.velocity.y += b.position.y * 0.006 * local;
+          b.velocity.y -= 0.013 * dropF;
         }
 
         // Interactive Cursor Repulsion
@@ -502,19 +492,13 @@ export function HeroCanvas3D() {
 
         b.velocity.multiplyScalar(damping);
         b.position.addScaledVector(b.velocity, 1);
-
-        b.material.opacity =
-          flyF > 0.001
-            ? 1 - smoothstep(camera.position.z - 2.6, camera.position.z - 0.3, b.position.z)
-            : 1;
-
-        const target = b.radius * (1 - (1 - shapeScale) * shapeF);
-        b.visualScale += (target - b.visualScale) * 0.12;
+        b.material.opacity = 1;
+        b.visualScale = b.radius;
         b.sphere.scale.setScalar(b.visualScale);
       }
 
       // --- 4 Sub-steps Verlet Collision Resolution ---
-      const collideScale = 0.28 * (1 - 0.93 * shapeF) * (1 - flyF);
+      const collideScale = 0.28;
       for (let step = 0; step < 4; step++) {
         for (let i = 0; i < balls.length; i++) {
           for (let j = i + 1; j < balls.length; j++) {
@@ -546,11 +530,11 @@ export function HeroCanvas3D() {
       // --- Viewport Bounds Containment & Physics Rolling ---
       const xBound = viewportWidth / 2 - 0.2;
       const topY = viewportHeight / 2 - 0.05;
-      const floorY = -viewportHeight / 2 + 0.05;
+      const floorY = -viewportHeight / 2 + 0.75;
       const zBound = 2.5;
       const restitution = 0.3 + 0.35 * dropF;
-      const contain = flyF < 0.5;
-      const zContain = flyF < 0.02;
+      const contain = true;
+      const zContain = true;
 
       for (const b of balls) {
         const r = b.visualScale;
