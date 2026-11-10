@@ -74,19 +74,9 @@ export function CodeEditor() {
           <Code2 className="w-5 h-5 text-zinc-300" />
         </div>
         <h3 className="text-xs font-semibold text-zinc-200 mb-1">No File Open</h3>
-        <p className="text-[11px] text-zinc-500 max-w-xs mb-4 leading-relaxed">
+        <p className="text-[11px] text-zinc-500 max-w-xs leading-relaxed">
           Select a file from the explorer on the left or create a new one to start writing code.
         </p>
-        <div className="flex items-center gap-2 text-[10px] text-zinc-400 bg-white/[0.03] px-3 py-1.5 rounded-md border border-white/[0.06] font-mono">
-          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-200 border border-white/[0.08]">Ctrl+S</kbd>
-          <span>Save</span>
-          <span className="text-zinc-600">•</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-200 border border-white/[0.08]">Ctrl+`</kbd>
-          <span>Terminal</span>
-          <span className="text-zinc-600">•</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-200 border border-white/[0.08]">Ctrl+B</kbd>
-          <span>Sidebar</span>
-        </div>
       </div>
     );
   }
