@@ -26,6 +26,7 @@ export default function WelcomePage() {
   const router = useRouter();
   const [username, setUsername] = useState('developer');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [systemStatus, setSystemStatus] = useState<{ dockerAvailable: boolean; platform: string }>({
     dockerAvailable: false,
     platform: 'unknown',
@@ -82,34 +83,34 @@ export default function WelcomePage() {
       <header className="fixed top-0 left-0 right-0 h-24 px-8 md:px-16 flex items-center justify-between z-40 bg-transparent select-none">
         {/* Wordmark */}
         <Link href="#home" className="text-xl md:text-2xl font-black tracking-[0.25em] text-white hover:opacity-80 transition-opacity uppercase font-mono">
-          GRAVITY
+          CLOUDIDE
         </Link>
 
         {/* Center Nav Links */}
         <nav className="hidden md:flex items-center gap-10 text-xs md:text-sm font-medium text-zinc-300">
-          <Link href="#works" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
-            Works
+          <Link href="#home" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Overview
           </Link>
-          <Link href="#services" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
-            Services
+          <Link href="#features" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Features
           </Link>
-          <Link href="#team" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
-            Team
+          <Link href="#features" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Containers
           </Link>
-          <Link href="#story" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
-            Story
+          <Link href="#features" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Terminal
           </Link>
-          <Link href="#contact" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
-            Contact
+          <Link href="#status" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Status
           </Link>
         </nav>
 
         {/* Right Actions */}
         <div className="flex items-center gap-3.5">
           <button
-            onClick={() => handleEnterPlayground()}
+            onClick={() => setIsDrawerOpen(true)}
             className="w-11 h-11 rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-xl shadow-lg flex items-center justify-center text-white hover:bg-white/[0.15] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            aria-label="Open studio controls"
+            aria-label="Open workspace controls"
           >
             <svg
               width="17"
@@ -135,7 +136,7 @@ export default function WelcomePage() {
             onClick={() => handleEnterPlayground()}
             className="inline-flex items-center gap-4 pl-6 pr-1.5 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 shadow-lg text-sm font-medium text-white hover:border-purple-400/50 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
-            <span>Contact us</span>
+            <span>Launch IDE</span>
             <span className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 shadow-md shadow-purple-500/40 flex items-center justify-center">
               <svg
                 width="15"
@@ -154,6 +155,79 @@ export default function WelcomePage() {
         </div>
       </header>
 
+      {/* Slide-over Workspace Controls Drawer */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsDrawerOpen(false)}
+          />
+          <div className="relative w-full max-w-sm bg-[#0a0714]/95 border-l border-white/[0.12] backdrop-blur-2xl p-8 flex flex-col justify-between z-10 shadow-2xl">
+            <div>
+              <div className="flex items-center justify-between pb-6 border-b border-white/[0.08]">
+                <div className="text-sm font-mono tracking-widest uppercase text-purple-400 font-bold">
+                  [ Workspace Controls ]
+                </div>
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-6">
+                <div>
+                  <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider block mb-2">
+                    Container Username
+                  </label>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.04] border border-white/10">
+                    <span className="text-xs text-purple-400 font-mono pl-1 select-none font-semibold">@</span>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="developer"
+                      className="bg-transparent text-xs text-white outline-none flex-1 font-mono placeholder-zinc-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">
+                    Runtime Architecture
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
+                    <span className="text-zinc-300">Docker Micro-Container</span>
+                    <span className="text-emerald-400 font-mono text-[11px] font-semibold">Isolated</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
+                    <span className="text-zinc-300">PTY WebSocket Shell</span>
+                    <span className="text-purple-400 font-mono text-[11px] font-semibold">&lt; 150ms Boot</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
+                    <span className="text-zinc-300">Storage Volume Mount</span>
+                    <span className="text-indigo-400 font-mono text-[11px] font-semibold">Persistent</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setIsDrawerOpen(false);
+                handleEnterPlayground();
+              }}
+              disabled={isSubmitting}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white text-xs font-semibold shadow-lg shadow-purple-500/30 hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <span>Launch Workspace</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <main className="relative z-10 flex flex-col">
         {/* SECTION 1: HERO */}
@@ -170,16 +244,17 @@ export default function WelcomePage() {
                 transition={{ duration: 0.8, delay: 0.15 }}
                 className="text-xs md:text-sm font-mono tracking-wider uppercase text-purple-400 mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
               >
-                [ Digital studio ]
+                [ Ephemeral Docker Micro-Containers ]
               </motion.div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.28 }}
-                className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-tight text-white leading-[0.98] drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] whitespace-nowrap"
+                className="text-4xl sm:text-6xl md:text-7xl lg:text-[76px] font-bold tracking-tight text-white leading-[0.98] drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)]"
               >
-                Less noise. More gravity.
+                Elevate Your <br />
+                Coding Experience.
               </motion.h1>
             </div>
 
@@ -188,14 +263,36 @@ export default function WelcomePage() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.45 }}
-              className="w-full max-w-[280px] flex flex-col gap-6 text-left shrink-0"
+              className="w-full max-w-[300px] flex flex-col gap-5 text-left shrink-0"
             >
               <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
-                We design digital experiences that remove distraction and amplify presence.
+                Unlock your development potential in a fully isolated cloud environment, powered by dedicated Linux containers.
               </p>
+
+              {/* Quick Launch Input Form */}
+              <form onSubmit={handleEnterPlayground} className="flex items-center gap-2 p-1.5 bg-white/[0.06] backdrop-blur-xl border border-white/20 rounded-full shadow-lg hover:border-purple-500/50 transition-all w-full">
+                <span className="text-xs text-purple-400 font-mono pl-3 select-none font-semibold">@</span>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="developer"
+                  className="bg-transparent text-xs text-white placeholder-zinc-400 outline-none flex-1 min-w-0 font-mono"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-7 h-7 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 shadow-md flex items-center justify-center text-white shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+                >
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </form>
+
               <div className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
-                © 2026 — Independent digital agency
+                © 2026 — CloudIDE Container Runtime
               </div>
+
               <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-mono uppercase tracking-widest select-none">
                 <svg
                   width="14"
@@ -207,7 +304,7 @@ export default function WelcomePage() {
                 >
                   <path d="M12 5v14m-7-7 7 7 7-7" />
                 </svg>
-                <span>Scroll</span>
+                <span>Scroll to explore</span>
               </div>
             </motion.div>
           </div>
@@ -280,14 +377,14 @@ export default function WelcomePage() {
         </section>
 
         {/* SECTION 3: FOOTER & STATUS */}
-        <footer className="border-t border-white/[0.08] bg-[#050309]/80 backdrop-blur-xl py-16 px-6 md:px-16 relative z-20">
+        <footer id="status" className="border-t border-white/[0.08] bg-[#050309]/80 backdrop-blur-xl py-16 px-6 md:px-16 relative z-20">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex flex-col items-center md:items-start gap-2">
-              <div className="text-lg font-bold tracking-tight text-white">
-                CloudIDE
+              <div className="text-lg font-bold tracking-[0.2em] uppercase font-mono text-white">
+                CLOUDIDE
               </div>
               <p className="text-xs text-zinc-500 font-light">
-                © 2026 CloudIDE Digital Systems. All rights reserved.
+                © 2026 CloudIDE Container Systems. Built with Docker & Linux PTY.
               </p>
             </div>
 
@@ -309,10 +406,13 @@ export default function WelcomePage() {
             {/* Quick Links */}
             <div className="flex items-center gap-6 text-xs text-zinc-400">
               <Link href="#home" className="hover:text-white transition-colors">
-                Top
+                Overview
               </Link>
               <Link href="#features" className="hover:text-white transition-colors">
                 Features
+              </Link>
+              <Link href="#status" className="hover:text-white transition-colors">
+                Status
               </Link>
             </div>
           </div>
