@@ -26,10 +26,24 @@ export function BrowserPreview() {
 
   if (!workspace) return null;
 
-  const currentPath = previewPath.startsWith('/') ? previewPath.slice(1) : previewPath;
-  const backendBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-  const previewUrl = `${backendBase}/api/workspaces/${workspace.id}/preview/${currentPath}`;
-  const iframeSrc = `${previewUrl}?t=${previewRefreshKey}`;
+  const isFullUrl = previewPath.startsWith('http://') || previewPath.startsWith('https://');
+  const isPortOnly = /^:?\d{4,5}/.test(previewPath);
+
+  let iframeSrc = '';
+  let displayPrefix = 'http://localhost:4000/';
+
+  if (isFullUrl) {
+    iframeSrc = previewPath;
+    displayPrefix = '';
+  } else if (isPortOnly) {
+    const port = previewPath.replace(/^:/, '');
+    iframeSrc = `http://localhost:${port}/`;
+    displayPrefix = '';
+  } else {
+    const currentPath = previewPath.startsWith('/') ? previewPath.slice(1) : previewPath;
+    const backendBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    iframeSrc = `${backendBase}/api/workspaces/${workspace.id}/preview/${currentPath}?t=${previewRefreshKey}`;
+  }
 
   const handleRefresh = () => {
     setIsRotating(true);
@@ -40,7 +54,13 @@ export function BrowserPreview() {
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     let cleaned = inputUrl.trim();
-    if (cleaned.startsWith('/')) cleaned = cleaned.slice(1);
+    if (cleaned === '5173' || cleaned === ':5173') {
+      cleaned = 'http://localhost:5173/';
+    } else if (!cleaned.startsWith('http') && /^\d{4,5}/.test(cleaned)) {
+      cleaned = `http://localhost:${cleaned}/`;
+    } else if (!cleaned.startsWith('http') && cleaned.startsWith('/')) {
+      cleaned = cleaned.slice(1);
+    }
     setPreviewPath(cleaned || 'index.html');
   };
 
@@ -65,12 +85,14 @@ export function BrowserPreview() {
           className="flex-1 max-w-[420px] flex items-center gap-1.5 px-2.5 py-1 bg-[#141418] border border-white/[0.08] hover:border-white/[0.14] focus-within:border-zinc-500 rounded-md transition-colors"
         >
           <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
-          <span className="text-[10px] text-zinc-500 select-none font-mono">http://localhost:4000/</span>
+          {displayPrefix ? (
+            <span className="text-[10px] text-zinc-500 select-none font-mono shrink-0">{displayPrefix}</span>
+          ) : null}
           <input
             type="text"
             value={inputUrl}
             onChange={(e) => setInputUrl(e.target.value)}
-            placeholder="index.html"
+            placeholder="http://localhost:5173 or index.html"
             className="flex-1 bg-transparent text-[11px] font-mono text-zinc-200 outline-none truncate"
           />
         </form>
@@ -88,7 +110,7 @@ export function BrowserPreview() {
 
           {/* Option 2: Open in New Tab */}
           <a
-            href={previewUrl}
+            href={iframeSrc}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-2 py-0.5 rounded hover:bg-white/[0.08] bg-white/[0.04] border border-white/[0.08] text-zinc-300 hover:text-white transition-colors text-[11px] font-medium"

@@ -48,6 +48,8 @@ export class TerminalService {
           Env: [
             'TERM=xterm-256color',
             'COLORTERM=truecolor',
+            'HOST=0.0.0.0',
+            'VITE_HOST=0.0.0.0',
             'PS1=\\[\\033[1;36m\\]cloudide\\[\\033[0m\\]:\\[\\033[1;32m\\]\\w\\[\\033[0m\\]# ',
           ],
         });

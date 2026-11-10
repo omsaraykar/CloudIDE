@@ -8,6 +8,24 @@ import { db } from '../../db/client.js';
 import { FilesystemService } from '../filesystem/FilesystemService.js';
 import { ExecutionEngine } from '../execution/ExecutionEngine.js';
 
+const DEV_PORT_BINDINGS: Record<string, Array<{ HostPort: string }>> = {
+  '5173/tcp': [{ HostPort: '5173' }],
+  '4173/tcp': [{ HostPort: '4173' }],
+  '3001/tcp': [{ HostPort: '3001' }],
+  '8080/tcp': [{ HostPort: '8080' }],
+  '8000/tcp': [{ HostPort: '8000' }],
+  '5000/tcp': [{ HostPort: '5000' }],
+};
+
+const DEV_EXPOSED_PORTS: Record<string, {}> = {
+  '5173/tcp': {},
+  '4173/tcp': {},
+  '3001/tcp': {},
+  '8080/tcp': {},
+  '8000/tcp': {},
+  '5000/tcp': {},
+};
+
 export class WorkspaceManager {
   private docker: Docker;
 
@@ -39,7 +57,7 @@ export class WorkspaceManager {
     }
 
     try {
-      const container = (await this.docker.createContainer({
+      const container = await this.createContainerSafe({
         Image: CONFIG.DOCKER_DEFAULT_IMAGE,
         name: `cloudide-${ws.id}`,
         Tty: true,
@@ -47,14 +65,16 @@ export class WorkspaceManager {
         WorkingDir: '/workspace',
         User: 'root',
         Cmd: ['tail', '-f', '/dev/null'],
+        ExposedPorts: DEV_EXPOSED_PORTS,
         HostConfig: {
           Binds: [`${path.resolve(ws.path)}:/workspace:rw`],
           Memory: CONFIG.MEMORY_LIMIT_BYTES,
           NanoCpus: 1000000000,
           PidsLimit: 200,
           NetworkMode: 'bridge',
+          PortBindings: DEV_PORT_BINDINGS,
         },
-      })) as Docker.Container;
+      });
 
       await container.start();
       ws.containerId = container.id;
@@ -102,7 +122,7 @@ export class WorkspaceManager {
           }
           containerId = oldContainer.id;
         } catch {
-          const container = (await this.docker.createContainer({
+          const container = await this.createContainerSafe({
             Image: CONFIG.DOCKER_DEFAULT_IMAGE,
             name: containerName,
             Tty: true,
@@ -110,14 +130,16 @@ export class WorkspaceManager {
             WorkingDir: '/workspace',
             User: 'root', // Full root permissions
             Cmd: ['tail', '-f', '/dev/null'],
+            ExposedPorts: DEV_EXPOSED_PORTS,
             HostConfig: {
               Binds: [`${path.resolve(workspacePath)}:/workspace:rw`],
               Memory: CONFIG.MEMORY_LIMIT_BYTES,
               NanoCpus: 1000000000,
               PidsLimit: 200,
               NetworkMode: 'bridge',
+              PortBindings: DEV_PORT_BINDINGS,
             },
-          })) as Docker.Container;
+          });
 
           await container.start();
           containerId = container.id;
@@ -279,5 +301,25 @@ export class WorkspaceManager {
 
     await db.deleteWorkspace(id);
     return true;
+  }
+
+  private async createContainerSafe(options: Docker.ContainerCreateOptions): Promise<Docker.Container> {
+    try {
+      return (await this.docker.createContainer(options)) as Docker.Container;
+    } catch (err) {
+      const msg = (err as Error).message || '';
+      if (msg.includes('port is already allocated') || msg.includes('bind')) {
+        console.warn('[WorkspaceManager] Port collision during container creation, falling back without conflicting ports:', msg);
+        const fallbackOpts: Docker.ContainerCreateOptions = {
+          ...options,
+          HostConfig: {
+            ...options.HostConfig,
+            PortBindings: {},
+          },
+        };
+        return (await this.docker.createContainer(fallbackOpts)) as Docker.Container;
+      }
+      throw err;
+    }
   }
 }
