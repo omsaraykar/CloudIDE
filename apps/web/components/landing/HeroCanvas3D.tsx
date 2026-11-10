@@ -74,14 +74,14 @@ export function HeroCanvas3D() {
       }
     });
 
-    // 2. Palette & Dynamic Color Mapping (CloudIDE Luxury Violet & Obsidian Theme)
+    // 2. Palette & Dynamic Color Mapping (Cobalt, Ice Blue & Porcelain Pearl Theme)
     const getDynamicColors = () => {
       return {
-        pastel: new THREE.Color('#f5f0ff'), // Pearlescent Lilac-White
-        light: new THREE.Color('#c084fc'),  // Soft Luminous Lavender
-        medium: new THREE.Color('#8b5cf6'), // Electric Violet / Purple
-        deep: new THREE.Color('#2e0d54'),   // Deep Obsidian Amethyst Plum
-        glass: new THREE.Color('#a855f7'),  // Translucent Electric Violet Crystal Glass
+        pastel: new THREE.Color('#edf2ff'), // Clean Porcelain Ice-White
+        light: new THREE.Color('#a3c4f8'),  // Soft Luminous Ice Blue
+        medium: new THREE.Color('#1455f5'), // Vibrant Electric Royal Cobalt Blue
+        deep: new THREE.Color('#061d6e'),   // Deep Sapphire / Midnight Blue
+        glass: new THREE.Color('#2563eb'),  // Translucent Azure Blue Crystal Glass
       };
     };
 
@@ -92,11 +92,11 @@ export function HeroCanvas3D() {
       curPal[r] = palette[r].clone();
     });
 
-    // 3. Studio Lighting (Tailored for Rich Violet & Obsidian Balloons)
+    // 3. Studio Lighting (Tailored for Rich Cobalt & Porcelain Balloons)
     const hemiLight = new THREE.HemisphereLight(0xffffff, new THREE.Color(palette.medium), 1.6);
     scene.add(hemiLight);
 
-    const key = new THREE.DirectionalLight(0xffffff, 1.6);
+    const key = new THREE.DirectionalLight(0xffffff, 1.7);
     key.position.set(-6, 10, 8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -112,7 +112,7 @@ export function HeroCanvas3D() {
     key.shadow.radius = 8;
     scene.add(key);
 
-    const rim = new THREE.DirectionalLight(0xc084fc, 1.4);
+    const rim = new THREE.DirectionalLight(0xa3c4f8, 1.5);
     rim.position.set(8, 7, -8);
     scene.add(rim);
 
@@ -120,7 +120,7 @@ export function HeroCanvas3D() {
     front.position.set(0, 0, 11);
     scene.add(front);
 
-    const side = new THREE.DirectionalLight(0x818cf8, 0.45);
+    const side = new THREE.DirectionalLight(0x3b82f6, 0.5);
     side.position.set(-9, -2, 4);
     scene.add(side);
 
@@ -133,8 +133,8 @@ export function HeroCanvas3D() {
       if (ctx) {
         const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
         grad.addColorStop(0, 'rgba(255,255,255,1)');
-        grad.addColorStop(0.35, 'rgba(216,180,254,0.7)');
-        grad.addColorStop(1, 'rgba(216,180,254,0)');
+        grad.addColorStop(0.35, 'rgba(163,196,248,0.7)');
+        grad.addColorStop(1, 'rgba(163,196,248,0)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 32, 32);
       }
@@ -240,12 +240,12 @@ export function HeroCanvas3D() {
         mat = register(
           new THREE.MeshPhysicalMaterial({
             color: chosen,
-            roughness: 0.44,
-            metalness: 0,
-            clearcoat: 0.24,
-            clearcoatRoughness: 0.35,
+            roughness: 0.32,
+            metalness: 0.02,
+            clearcoat: 0.55,
+            clearcoatRoughness: 0.22,
             emissive: chosen,
-            emissiveIntensity: 0.08,
+            emissiveIntensity: 0.04,
             transparent: true,
           })
         );

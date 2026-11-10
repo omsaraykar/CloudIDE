@@ -63,11 +63,11 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07050d] text-white flex flex-col relative font-sans selection:bg-purple-500/30 selection:text-white">
+    <div className="min-h-screen bg-[#050711] text-white flex flex-col relative font-sans selection:bg-blue-500/30 selection:text-white">
       {/* Fixed 3D Gravity Spheres Canvas Background & CSS Post-Processing Layering */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Soft violet & purple radial bloom under canvas */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_75%,rgba(139,92,246,0.22),transparent_70%)]" />
+        {/* Soft royal blue & cobalt radial bloom under canvas */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_75%,rgba(20,85,245,0.22),transparent_70%)]" />
         <HeroCanvas3D />
         {/* Film grain texture to hide gradient banding and add tactile depth */}
         <div
@@ -82,12 +82,12 @@ export default function WelcomePage() {
       </div>
 
       {/* Ambient Top Glows */}
-      <div className="fixed -top-32 -left-32 w-[650px] h-[650px] bg-purple-900/15 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="fixed top-10 right-0 w-[450px] h-[450px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none z-0" />
+      <div className="fixed -top-32 -left-32 w-[650px] h-[650px] bg-blue-900/18 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="fixed top-10 right-0 w-[450px] h-[450px] bg-sky-900/15 rounded-full blur-[130px] pointer-events-none z-0" />
 
       {/* Fixed Top Navigation Bar */}
       <header className={`fixed top-0 left-0 right-0 h-24 px-8 md:px-16 flex items-center justify-between z-40 transition-colors duration-300 ${
-        scrolled ? 'bg-[#070510]/80 backdrop-blur-xl border-b border-white/[0.08]' : 'bg-transparent border-b border-transparent'
+        scrolled ? 'bg-[#050711]/80 backdrop-blur-xl border-b border-white/[0.08]' : 'bg-transparent border-b border-transparent'
       } select-none`}>
         {/* Wordmark */}
         <Link href="#home" className="text-xl md:text-2xl font-black tracking-[0.25em] text-white hover:opacity-80 transition-opacity uppercase font-mono">
@@ -114,10 +114,10 @@ export default function WelcomePage() {
         <div className="flex items-center gap-3.5">
           <button
             onClick={() => handleEnterPlayground()}
-            className="inline-flex items-center gap-4 pl-6 pr-1.5 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 shadow-lg text-sm font-medium text-white hover:border-purple-400/50 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+            className="inline-flex items-center gap-4 pl-6 pr-1.5 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 shadow-lg text-sm font-medium text-white hover:border-blue-400/50 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
             <span>Launch IDE</span>
-            <span className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 shadow-md shadow-purple-500/40 flex items-center justify-center">
+            <span className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md shadow-blue-500/40 flex items-center justify-center">
               <svg
                 width="15"
                 height="15"
@@ -149,7 +149,7 @@ export default function WelcomePage() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.15 }}
-                className="text-xs md:text-sm font-mono tracking-wider uppercase text-purple-400 mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+                className="text-xs md:text-sm font-mono tracking-wider uppercase text-blue-400 mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
               >
                 [ Ephemeral Docker Micro-Containers ]
               </motion.div>
@@ -177,8 +177,8 @@ export default function WelcomePage() {
               </p>
 
               {/* Quick Launch Input Form */}
-              <form onSubmit={handleEnterPlayground} className="flex items-center gap-2 p-1.5 bg-white/[0.06] backdrop-blur-xl border border-white/20 rounded-full shadow-lg hover:border-purple-500/50 transition-all w-full">
-                <span className="text-xs text-purple-400 font-mono pl-3 select-none font-semibold">@</span>
+              <form onSubmit={handleEnterPlayground} className="flex items-center gap-2 p-1.5 bg-white/[0.06] backdrop-blur-xl border border-white/20 rounded-full shadow-lg hover:border-blue-500/50 transition-all w-full">
+                <span className="text-xs text-blue-400 font-mono pl-3 select-none font-semibold">@</span>
                 <input
                   type="text"
                   value={username}
@@ -190,7 +190,7 @@ export default function WelcomePage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-7 h-7 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 shadow-md flex items-center justify-center text-white shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+                  className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md shadow-blue-500/30 flex items-center justify-center text-white shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -220,7 +220,7 @@ export default function WelcomePage() {
         {/* SECTION 2: FEATURES & WORKFLOW */}
         <section id="features" className="min-h-screen pt-36 pb-36 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center relative z-20">
           <div className="max-w-2xl mb-12">
-            <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+            <div className="text-xs font-mono tracking-widest text-blue-400 uppercase mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
               [ 01 — Developer Experience ]
             </div>
             <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4 leading-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
@@ -233,9 +233,9 @@ export default function WelcomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
+            <div className="p-8 rounded-2xl bg-[#070b19]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-blue-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-lg bg-purple-500/15 text-purple-400">
+                <div className="p-2.5 rounded-lg bg-blue-500/15 text-blue-400">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Full Linux Root Privileges</h3>
@@ -245,7 +245,7 @@ export default function WelcomePage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
+            <div className="p-8 rounded-2xl bg-[#070b19]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-blue-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2.5 rounded-lg bg-indigo-500/15 text-indigo-400">
                   <Layers className="w-5 h-5" />
@@ -257,9 +257,9 @@ export default function WelcomePage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
+            <div className="p-8 rounded-2xl bg-[#070b19]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-blue-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-lg bg-violet-500/15 text-violet-400">
+                <div className="p-2.5 rounded-lg bg-sky-500/15 text-sky-400">
                   <Zap className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Instant One-Click Execution</h3>
@@ -269,9 +269,9 @@ export default function WelcomePage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
+            <div className="p-8 rounded-2xl bg-[#070b19]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-blue-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-lg bg-pink-500/15 text-pink-400">
+                <div className="p-2.5 rounded-lg bg-cyan-500/15 text-cyan-400">
                   <Laptop className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Device Agnostic Access</h3>
