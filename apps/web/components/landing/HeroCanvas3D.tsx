@@ -178,7 +178,7 @@ export function HeroCanvas3D() {
         vec3 p2 = position + bitangent * eps + tNormal * getDisplacement(position + bitangent * eps);
 
         vec3 computedNormal = normalize(cross(p1 - p0, p2 - p0));
-        vec3 objectNormal = computedNormal;
+        objectNormal = computedNormal;
 
         // Transform normal into view space using normalMatrix for consistent world lighting
         vec3 transformedNormal = normalMatrix * computedNormal;
