@@ -388,12 +388,15 @@ export default function WelcomePage() {
         {/* SECTION 3: FOOTER & STATUS */}
         <footer id="status" className="border-t border-white/[0.08] bg-[#050309]/80 backdrop-blur-xl py-16 px-6 md:px-16 relative z-20">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex flex-col items-center md:items-start gap-2">
+            <div className="flex flex-col items-center md:items-start gap-1.5">
               <div className="text-lg font-bold tracking-[0.2em] uppercase font-mono text-white">
                 CLOUDIDE
               </div>
+              <p className="text-xs text-zinc-300 font-light">
+                © 2026 Om Saraykar
+              </p>
               <p className="text-xs text-zinc-500 font-light">
-                © 2026 CloudIDE Container Systems. Built with Docker & Linux PTY.
+                Built with Next.js, and stack
               </p>
             </div>
 
