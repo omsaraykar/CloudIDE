@@ -144,7 +144,7 @@ export default function WelcomePage() {
         >
           <div className="w-full flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pointer-events-auto">
             {/* Left Column */}
-            <div className="flex flex-col items-start text-left">
+            <div className="flex flex-col items-start text-left -translate-y-6 md:-translate-y-10">
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
