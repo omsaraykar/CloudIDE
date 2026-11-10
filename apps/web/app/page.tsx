@@ -54,9 +54,21 @@ export default function WelcomePage() {
 
   return (
     <div className="min-h-screen bg-[#07050d] text-white flex flex-col relative overflow-hidden font-sans selection:bg-purple-500/30 selection:text-white">
-      {/* 3D Organic Liquid Blob Canvas Background */}
+      {/* 3D Organic Liquid Blob Canvas Background & CSS Post-Processing Layering */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Soft violet radial bloom under canvas */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_100%,rgba(124,58,237,0.35),transparent_70%)]" />
         <HeroCanvas3D />
+        {/* Film grain texture to hide gradient banding and add tactile organic depth */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\'><filter id=\'n\'><feTurbulence baseFrequency=\'.8\' numOctaves=\'2\'/></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23n)\'/></svg>")',
+          }}
+        />
+        {/* Center vignette framing */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.55))]" />
       </div>
 
       {/* Ambient Top-Left Purple Glow (Matches reference image) */}
@@ -97,7 +109,7 @@ export default function WelcomePage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleEnterPlayground()}
-            className="text-xs font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-all"
+            className="text-xs font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-full bg-zinc-900/90 hover:bg-zinc-800 border border-white/[0.12] transition-all"
           >
             Login
           </button>
@@ -141,7 +153,7 @@ export default function WelcomePage() {
             className="mt-8 relative z-30"
           >
             <form onSubmit={handleEnterPlayground} className="flex items-center justify-center">
-              <div className="flex items-center gap-2 p-1.5 bg-[#120d22]/90 border border-white/[0.12] backdrop-blur-xl rounded-full shadow-2xl hover:border-purple-500/40 transition-all max-w-sm w-full">
+              <div className="flex items-center gap-2 p-1.5 bg-[#120d22] border border-white/[0.14] rounded-full shadow-2xl hover:border-purple-500/40 transition-all max-w-sm w-full">
                 <span className="text-xs text-purple-300/80 font-mono pl-3.5 select-none">@</span>
                 <input
                   type="text"

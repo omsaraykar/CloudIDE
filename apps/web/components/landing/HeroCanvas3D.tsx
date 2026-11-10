@@ -17,13 +17,17 @@ export function HeroCanvas3D() {
       return item;
     };
 
+    // Performance & Accessibility checks
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let isVisible = true;
+
     // 1. Scene & Camera Setup
     const scene = new THREE.Scene();
 
     const getWidth = () => container.clientWidth || window.innerWidth;
     const getHeight = () => container.clientHeight || window.innerHeight;
 
-    const camera = new THREE.PerspectiveCamera(42, getWidth() / getHeight(), 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(40, getWidth() / getHeight(), 0.1, 100);
     camera.position.set(0, 0.1, 9.2);
     camera.lookAt(0, -0.4, 0);
 
@@ -33,72 +37,104 @@ export function HeroCanvas3D() {
       powerPreference: 'high-performance',
     });
     renderer.setSize(getWidth(), getHeight());
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.35;
+    renderer.toneMappingExposure = 1.05;
+    renderer.domElement.style.opacity = '0';
+    renderer.domElement.style.transition = 'opacity 0.6s ease';
     container.appendChild(renderer.domElement);
 
-    // 2. Consistent Fixed Lighting Setup
-    // Fixed ambient base
-    const ambientLight = new THREE.AmbientLight(0x1a0f2e, 1.8);
+    // 2. High-End Studio Environment Map (Single Soft Top-Left Softbox)
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envScene = new THREE.Scene();
+    const addSoftbox = (
+      w: number,
+      h: number,
+      color: number,
+      intensity: number,
+      pos: [number, number, number]
+    ) => {
+      const planeMat = register(
+        new THREE.MeshBasicMaterial({
+          color: new THREE.Color(color).multiplyScalar(intensity),
+          side: THREE.DoubleSide,
+        })
+      );
+      const m = new THREE.Mesh(register(new THREE.PlaneGeometry(w, h)), planeMat);
+      m.position.set(...pos);
+      m.lookAt(0, 0, 0);
+      envScene.add(m);
+    };
+
+    // Single soft top-left light strip on black background: reflections only on lit side
+    addSoftbox(14, 3.5, 0xc084fc, 6.0, [-8, 7, 4]);
+
+    const envTex = pmrem.fromScene(envScene, 0.04).texture;
+    register(envTex);
+    pmrem.dispose();
+
+    // 3. Cinematic Directional Lighting (Dominant Top-Left Key Light + Dark Shadows)
+    const ambientLight = new THREE.AmbientLight(0x0a0414, 0.08);
     scene.add(ambientLight);
 
-    // Target for all directional lights (fixed at center of the 3D model)
     const lightTarget = new THREE.Object3D();
-    lightTarget.position.set(0, -3.8, 0.4);
+    lightTarget.position.set(0, -4.55, 0.4);
     scene.add(lightTarget);
 
-    // Fixed Top-left purple key light (consistent main light source from top-left)
-    const keyLight = new THREE.DirectionalLight(0xc084fc, 4.0);
-    keyLight.position.set(-6, 6.5, 4.5);
+    // Dominant key light from top-left (fixed in world space)
+    const keyLight = new THREE.DirectionalLight(0xc084fc, 5.5);
+    keyLight.position.set(-7, 7, 4);
     keyLight.target = lightTarget;
     scene.add(keyLight);
 
-    // Fixed Top-right indigo rim light (crisp silhouette)
-    const rimLightRight = new THREE.DirectionalLight(0x818cf8, 3.4);
-    rimLightRight.position.set(6.5, 4.5, -2.5);
-    rimLightRight.target = lightTarget;
-    scene.add(rimLightRight);
+    // Faint indigo rim accent on bottom-right silhouette only (< 0.6)
+    const rimAccent = new THREE.DirectionalLight(0x6366f1, 0.38);
+    rimAccent.position.set(7, -5, -3.5);
+    rimAccent.target = lightTarget;
+    scene.add(rimAccent);
 
-    // Fixed Left purple rim light
-    const rimLightLeft = new THREE.DirectionalLight(0xa855f7, 2.8);
-    rimLightLeft.position.set(-6.5, 3.5, -2.5);
-    rimLightLeft.target = lightTarget;
-    scene.add(rimLightLeft);
-
-    // Fixed Front-bottom fill light (gentle ambient curve illumination)
-    const fillLight = new THREE.PointLight(0x7c3aed, 2.2, 20);
-    fillLight.position.set(0, -4.0, 4.5);
-    scene.add(fillLight);
-
-    // 3. Central 3D Organic Liquid Model (Three.js)
-    const sphereGeo = register(new THREE.SphereGeometry(3.9, 160, 160));
+    // 4. Upgraded Physical Satin & Sheen Material with Iridescence & Deep Shadows
+    const sphereGeo = register(new THREE.SphereGeometry(3.9, 128, 128));
 
     const customUniforms = {
       uTime: { value: 0 },
       uNoiseFreq: { value: 0.38 },
-      uNoiseSpeed: { value: 0.26 },
-      uDisplacement: { value: 0.58 },
+      uNoiseSpeed: { value: prefersReducedMotion ? 0.03 : 0.18 },
+      uDisplacement: { value: 0.40 },
     };
 
     const blobMat = register(
       new THREE.MeshPhysicalMaterial({
-        color: 0x241242, // Rich dark satin violet
-        emissive: 0x140826, // Subtle internal purple glow
-        emissiveIntensity: 0.45,
-        roughness: 0.56, // Satin / velvet matte finish
-        metalness: 0.10,
-        clearcoat: 0.25, // Gentle sheen
-        clearcoatRoughness: 0.35,
+        color: 0x0d0618,
+        roughness: 0.38,
+        metalness: 0.0,
+        clearcoat: 0.6,
+        clearcoatRoughness: 0.25,
+        sheen: 1.0,
+        sheenRoughness: 0.45,
+        sheenColor: new THREE.Color(0x8b5cf6), // velvet edge sheen
+        iridescence: 0.25,                     // subtle oil-slick shift
+        iridescenceIOR: 1.3,
+        iridescenceThicknessMinimum: 200,
+        iridescenceThicknessMaximum: 450,
+        envMap: envTex,
+        envMapIntensity: 0.9,
+        emissive: 0x06020e,
+        emissiveIntensity: 0.08,
+        transparent: false,
+        opacity: 1.0,
+        depthWrite: true,
       })
     );
 
-    // Custom Simplex noise displacement shader hook
+    // Custom Simplex noise displacement + Fresnel rim glow and crest tinting via vDisp
     blobMat.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = customUniforms.uTime;
       shader.uniforms.uNoiseFreq = customUniforms.uNoiseFreq;
       shader.uniforms.uNoiseSpeed = customUniforms.uNoiseSpeed;
       shader.uniforms.uDisplacement = customUniforms.uDisplacement;
+
+      shader.vertexShader = 'varying float vDisp;\n' + shader.vertexShader;
 
       shader.vertexShader = `
         uniform float uTime;
@@ -167,7 +203,6 @@ export function HeroCanvas3D() {
       shader.vertexShader = shader.vertexShader.replace(
         '#include <defaultnormal_vertex>',
         `
-        // Compute displacement & analytical normals with orthogonal tangent basis
         vec3 tNormal = normal;
         vec3 tangent = normalize(abs(tNormal.y) < 0.999 ? cross(tNormal, vec3(0.0, 1.0, 0.0)) : cross(tNormal, vec3(1.0, 0.0, 0.0)));
         vec3 bitangent = cross(tNormal, tangent);
@@ -179,12 +214,12 @@ export function HeroCanvas3D() {
 
         vec3 computedNormal = normalize(cross(p1 - p0, p2 - p0));
         objectNormal = computedNormal;
-
-        // Transform normal into view space using normalMatrix for consistent world lighting
         vec3 transformedNormal = normalMatrix * computedNormal;
         #ifdef USE_TANGENT
           vec3 transformedTangent = (modelViewMatrix * vec4(tangent, 0.0)).xyz;
         #endif
+
+        vDisp = getDisplacement(position) / max(uDisplacement, 0.001);
         `
       );
 
@@ -194,34 +229,63 @@ export function HeroCanvas3D() {
         vec3 transformed = p0;
         `
       );
+
+      // Fragment: Fresnel rim glow + displacement crest tinting focused on lit side
+      shader.fragmentShader = 'varying float vDisp;\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <emissivemap_fragment>',
+        `
+        #include <emissivemap_fragment>
+        vec3 vDir = normalize(vViewPosition);
+        float fres = pow(1.0 - saturate(dot(normal, vDir)), 3.0);
+        vec3 rimCol = mix(vec3(0.35, 0.18, 0.9), vec3(0.9, 0.35, 0.85), vDisp * 0.5 + 0.5);
+        // Align glow with top-left dominant key light, allowing shadow side to fall into deep darkness
+        float litSide = smoothstep(-0.25, 0.45, dot(normal, normalize(vec3(-0.7, 0.7, 0.35))));
+        totalEmissiveRadiance += rimCol * fres * 0.85 * litSide;
+        totalEmissiveRadiance += vec3(0.22, 0.07, 0.45) * smoothstep(0.1, 0.6, vDisp) * 0.28 * litSide;
+        `
+      );
     };
 
     const blobMesh = new THREE.Mesh(sphereGeo, blobMat);
-    // Position blob so upper organic crest rises from bottom center, peaking just below CTA
-    blobMesh.position.set(0, -4.1, 0.4);
+    blobMesh.position.set(0, -4.55, 0.4);
     blobMesh.scale.set(1.4, 1.05, 1.25);
     scene.add(blobMesh);
 
-    // 4. Subtle Ambient Cosmic Dust / Starfield (Strictly in deep background behind 3D model)
-    const starCount = 280;
+    // 5. Restrained Starfield with Soft Circular Radial Texture
+    const createCircleTexture = () => {
+      const c = document.createElement('canvas');
+      c.width = 32;
+      c.height = 32;
+      const ctx = c.getContext('2d');
+      if (ctx) {
+        const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        grad.addColorStop(0, 'rgba(255,255,255,1)');
+        grad.addColorStop(0.35, 'rgba(221,214,254,0.7)');
+        grad.addColorStop(1, 'rgba(221,214,254,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 32, 32);
+      }
+      return register(new THREE.CanvasTexture(c));
+    };
+
+    const starCount = 120;
     const starGeo = register(new THREE.BufferGeometry());
     const starPositions = new Float32Array(starCount * 3);
-
     for (let i = 0; i < starCount; i++) {
       starPositions[i * 3] = (Math.random() - 0.5) * 30;
       starPositions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      // Model center is at z = 0.4 with radius ~4.5 (reaches z ~ -4.2 at back).
-      // Placing stars strictly between z = -6.5 and z = -18.0 guarantees they are ALWAYS behind the model.
-      starPositions[i * 3 + 2] = -6.5 - Math.random() * 12.0;
+      starPositions[i * 3 + 2] = -7.5 - Math.random() * 10.0;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
 
     const starMat = register(
       new THREE.PointsMaterial({
-        size: 0.045,
-        color: 0xddd6fe,
+        size: 0.14,
+        map: createCircleTexture(),
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.45,
+        blending: THREE.AdditiveBlending,
         depthTest: true,
         depthWrite: false,
       })
@@ -229,7 +293,7 @@ export function HeroCanvas3D() {
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // 5. Mouse Interaction Tracking
+    // 6. Smooth Damped Mouse Tracking
     const mouse = {
       targetX: 0,
       targetY: 0,
@@ -237,7 +301,7 @@ export function HeroCanvas3D() {
       currentY: 0,
     };
 
-    const onPointerMove = (e: MouseEvent) => {
+    const onPointerMove = (e: PointerEvent) => {
       const rect = container.getBoundingClientRect();
       const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1; // -1 (left) to +1 (right)
       const normY = ((e.clientY - rect.top) / rect.height) * 2 - 1; // -1 (top/up) to +1 (bottom/down)
@@ -247,70 +311,81 @@ export function HeroCanvas3D() {
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
 
-    // 6. Continuous Dynamic Animation Loop
+    // 7. Visibility & Intersection Observers
+    const onVisibilityChange = () => {
+      isVisible = document.visibilityState === 'visible';
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting && document.visibilityState === 'visible';
+      },
+      { threshold: 0.05 }
+    );
+    intersectionObserver.observe(container);
+
+    // 8. Animation Loop with Cinematic Intro & Intentional Motion
     let animationFrameId: number;
     const startTime = performance.now();
     let lastTime = performance.now();
-    let currentRotY = 0;
-    let currentRotX = 0;
+
+    const damp = (a: number, b: number, k: number, dt: number) =>
+      a + (b - a) * (1 - Math.exp(-k * dt));
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      if (!isVisible) return;
 
       const now = performance.now();
       const delta = Math.min((now - lastTime) * 0.001, 0.1);
       lastTime = now;
 
       const elapsed = (now - startTime) * 0.001;
+
+      // Cinematic Intro Swell & Fade-in
+      const intro = 1 - Math.pow(1 - Math.min(elapsed / 2.4, 1), 3); // easeOutCubic
       customUniforms.uTime.value = elapsed;
+      customUniforms.uDisplacement.value = 0.40 * intro;
+      blobMesh.position.y = -4.55 - (1 - intro) * 1.4;
+      renderer.domElement.style.opacity = String(Math.min(elapsed / 1.2, 1));
 
-      // Mouse tracking with smooth inertia
-      mouse.currentX += (mouse.targetX - mouse.currentX) * 0.06;
-      mouse.currentY += (mouse.targetY - mouse.currentY) * 0.06;
+      // Frame-rate independent exponential damping
+      mouse.currentX = damp(mouse.currentX, mouse.targetX, 3.5, delta);
+      mouse.currentY = damp(mouse.currentY, mouse.targetY, 3.5, delta);
 
-      // Keep camera stable
-      camera.position.set(0, 0.1, 9.2);
-      camera.lookAt(0, -0.4, 0);
+      // Intentional, calm tilt per user direction requirements (pointer down tilts up, pointer right tilts left)
+      if (!prefersReducedMotion) {
+        blobMesh.rotation.y = mouse.currentX * -0.14 + elapsed * 0.02;
+        blobMesh.rotation.x = -mouse.currentY * 0.08;
+      }
 
-      // Continuous angular velocity based on pointer position (keeps moving in direction):
-      // Pointer is in RIGHT (currentX > 0) -> continuously rotates LEFT (negative angular velocity)
-      // Pointer is in LEFT  (currentX < 0) -> continuously rotates RIGHT (positive angular velocity)
-      const angularSpeedY = 0.06 - mouse.currentX * 0.9;
-
-      // Pointer is DOWN (currentY > 0) -> continuously rotates UP (negative angular velocity)
-      // Pointer is UP   (currentY < 0) -> continuously rotates DOWN (positive angular velocity)
-      const angularSpeedX = -mouse.currentY * 0.75;
-
-      currentRotY += angularSpeedY * delta;
-      currentRotX += angularSpeedX * delta;
-
-      blobMesh.rotation.y = currentRotY;
-      blobMesh.rotation.x = currentRotX;
-
-      // Rotate starfield in 2D plane (Z-axis) so depth never shifts forward
-      starMesh.rotation.z = elapsed * 0.005;
+      // Gentle starfield drift
+      starMesh.rotation.z = elapsed * 0.004;
 
       renderer.render(scene, camera);
     };
 
     animate();
 
-    // 7. Responsive Resize Handler
-    const handleResize = () => {
+    // 9. ResizeObserver
+    const resizeObserver = new ResizeObserver(() => {
       if (!container) return;
       const w = getWidth();
       const h = getHeight();
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
-    };
-
-    window.addEventListener('resize', handleResize);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    });
+    resizeObserver.observe(container);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      intersectionObserver.disconnect();
+      resizeObserver.disconnect();
 
       disposables.forEach((d) => {
         try {
@@ -323,6 +398,7 @@ export function HeroCanvas3D() {
       if (renderer.domElement && renderer.domElement.parentNode) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
+      renderer.forceContextLoss();
       renderer.dispose();
     };
   }, []);
