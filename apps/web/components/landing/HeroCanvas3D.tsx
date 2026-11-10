@@ -174,13 +174,22 @@ export function HeroCanvas3D() {
     };
     updateFrustumBounds();
 
-    // 6. Cuboids Initialization
-    const mobile = getWidth() < 768;
-    const n = mobile ? 54 : 96;
+    // 6. Cuboids Initialization: responsive cube density scaling down as screen shrinks
+    const TOTAL_CUBOIDS = 92;
+    const getActiveCount = (w: number) => {
+      if (w < 440) return 20;      // compact mobile (e.g. 375px - 414px)
+      if (w < 640) return 28;      // mobile
+      if (w < 768) return 38;      // large mobile / phablet
+      if (w < 1024) return 52;     // tablet
+      if (w < 1280) return 70;     // small laptop
+      return TOTAL_CUBOIDS;        // desktop & wide screens (92)
+    };
+
+    let activeCount = getActiveCount(getWidth());
     const cuboidGeometry = register(new RoundedBoxGeometry(1, 1, 1, 2, 0.14));
 
     let balls: Ball[] = [];
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < TOTAL_CUBOIDS; i++) {
       let radius = 0.28;
       const r = Math.random();
       if (r < 0.35) radius = 0.22 + Math.random() * 0.08;
@@ -266,6 +275,7 @@ export function HeroCanvas3D() {
       );
 
       group.add(mesh);
+      group.visible = i < activeCount;
       scene.add(group);
 
       const rotVelocity = new THREE.Vector3(
@@ -365,8 +375,8 @@ export function HeroCanvas3D() {
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
-    // Dynamic Cluster Center (Floating gracefully in the center of the viewport)
-    const clusterCenter = new THREE.Vector3(0, 0.35, 0);
+    // Dynamic Cluster Center (Floating gracefully in the center of the viewport, lifted on mobile)
+    const clusterCenter = new THREE.Vector3(0, getWidth() < 768 ? 0.85 : 0.35, 0);
 
     // 8. Mouse & Pointer Tracking
     const mousePos = { x: 99, y: 99, isDown: false };
@@ -468,8 +478,11 @@ export function HeroCanvas3D() {
 
       const clusterActive = Math.max(heroF, entranceT < 1 ? 1 : 0);
 
+      const count = Math.min(activeCount, balls.length);
+
       // --- Per-ball forces ---
-      for (const b of balls) {
+      for (let idx = 0; idx < count; idx++) {
+        const b = balls[idx];
         // Subtle organic float wave
         if (heroF > 0.01 && !prefersReducedMotion) {
           b.velocity.x += Math.sin(time * 0.4 + b.id * 1.5) * 0.0004 * b.radius * heroF;
@@ -486,8 +499,9 @@ export function HeroCanvas3D() {
         }
 
         // Soft floor cushion in hero stage to keep bottom text area unobstructed
-        if (heroF > 0.15 && b.position.y < -1.75) {
-          b.velocity.y += (-1.75 - b.position.y) * 0.1 * heroF;
+        const cushionY = viewportWidth < 6.5 ? -0.65 : -1.75;
+        if (heroF > 0.15 && b.position.y < cushionY) {
+          b.velocity.y += (cushionY - b.position.y) * 0.12 * heroF;
         }
 
         // Gravity Drop Stage
@@ -533,8 +547,8 @@ export function HeroCanvas3D() {
       // --- 4 Sub-steps Verlet Collision Resolution ---
       const collideScale = 0.28;
       for (let step = 0; step < 4; step++) {
-        for (let i = 0; i < balls.length; i++) {
-          for (let j = i + 1; j < balls.length; j++) {
+        for (let i = 0; i < count; i++) {
+          for (let j = i + 1; j < count; j++) {
             const a = balls[i];
             const b = balls[j];
             collideDiff.subVectors(b.position, a.position);
@@ -569,7 +583,8 @@ export function HeroCanvas3D() {
       const contain = true;
       const zContain = true;
 
-      for (const b of balls) {
+      for (let idx = 0; idx < count; idx++) {
+        const b = balls[idx];
         const r = b.visualScale;
         if (contain) {
           if (b.position.x < -xBound - r) {
@@ -627,7 +642,7 @@ export function HeroCanvas3D() {
 
     simulateAndRender();
 
-    // 11. ResizeObserver
+    // 11. ResizeObserver: adjusts canvas and scales cube count dynamically on screen resize
     const resizeObserver = new ResizeObserver(() => {
       if (!camera || !renderer || !container) return;
       const w = getWidth();
@@ -638,6 +653,27 @@ export function HeroCanvas3D() {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       updateFrustumBounds();
       assignHeartTargets();
+      clusterCenter.y = w < 768 ? 0.85 : 0.35;
+
+      // Dynamically scale down active cubes as screen shrinks, or restore as screen expands
+      const newCount = getActiveCount(w);
+      if (newCount !== activeCount) {
+        const prevCount = activeCount;
+        activeCount = newCount;
+        for (let i = 0; i < balls.length; i++) {
+          const isVis = i < activeCount;
+          balls[i].meshGroup.visible = isVis;
+          if (isVis && i >= prevCount) {
+            balls[i].position.set(
+              clusterCenter.x + (Math.random() - 0.5) * 0.5,
+              clusterCenter.y + (Math.random() - 0.5) * 0.5,
+              clusterCenter.z + (Math.random() - 0.5) * 0.35
+            );
+            balls[i].velocity.set(0, 0, 0);
+            balls[i].rotVelocity.set(0, 0, 0);
+          }
+        }
+      }
     });
     resizeObserver.observe(container);
 
