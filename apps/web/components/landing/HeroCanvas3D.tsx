@@ -298,9 +298,9 @@ export function HeroCanvas3D() {
       scene.add(group);
 
       const rotVelocity = new THREE.Vector3(
-        (Math.random() - 0.5) * 0.012,
-        (Math.random() - 0.5) * 0.012,
-        (Math.random() - 0.5) * 0.012
+        (Math.random() - 0.5) * 0.008,
+        (Math.random() - 0.5) * 0.008,
+        (Math.random() - 0.5) * 0.008
       );
 
       balls.push({
@@ -523,6 +523,10 @@ export function HeroCanvas3D() {
         // Falling to Ground Stage (Gravity acceleration)
         if (dropF > 0.001) {
           b.velocity.y -= 0.013 * dropF;
+          if (b.velocity.lengthSq() > 0.005) {
+            b.rotVelocity.x += b.velocity.y * 0.001;
+            b.rotVelocity.z += b.velocity.x * 0.001;
+          }
         }
 
         // Interactive Cursor Repulsion
@@ -540,6 +544,11 @@ export function HeroCanvas3D() {
             diffVec.z *= 0.12;
             diffVec.normalize();
             b.velocity.addScaledVector(diffVec, push);
+            if (push > 0.015) {
+              b.rotVelocity.x += (Math.random() - 0.5) * push * 0.1;
+              b.rotVelocity.y += (Math.random() - 0.5) * push * 0.1;
+              b.rotVelocity.z += (Math.random() - 0.5) * push * 0.1;
+            }
           }
         }
 
@@ -574,13 +583,6 @@ export function HeroCanvas3D() {
                 const impulse = (-(1 + params.bounciness) * along) / (1 / a.mass + 1 / b.mass);
                 a.velocity.addScaledVector(collideDiff, -impulse / a.mass);
                 b.velocity.addScaledVector(collideDiff, impulse / b.mass);
-                // Angular tumbling impulse on collision
-                a.rotVelocity.x += (Math.random() - 0.5) * 0.006;
-                b.rotVelocity.x += (Math.random() - 0.5) * 0.006;
-                a.rotVelocity.y += (Math.random() - 0.5) * 0.006;
-                b.rotVelocity.y += (Math.random() - 0.5) * 0.006;
-                a.rotVelocity.z += (Math.random() - 0.5) * 0.006;
-                b.rotVelocity.z += (Math.random() - 0.5) * 0.006;
               }
             }
           }
@@ -610,9 +612,9 @@ export function HeroCanvas3D() {
             b.position.y = floorY + r;
             if (b.velocity.y < 0) b.velocity.y = -b.velocity.y * restitution;
             if (dropF > 0.3) {
-              b.velocity.x *= 0.86;
-              b.velocity.z *= 0.86;
-              b.rotVelocity.multiplyScalar(0.9);
+              b.velocity.x *= 0.82;
+              b.velocity.z *= 0.82;
+              b.rotVelocity.multiplyScalar(0.75);
             }
           }
           const effectiveTopY = topY;
@@ -631,17 +633,18 @@ export function HeroCanvas3D() {
           }
         }
 
-        // Realistic Rolling & 3D Tumbling Rotation for Cuboids
-        b.meshGroup.rotation.x += b.rotVelocity.x;
-        b.meshGroup.rotation.y += b.rotVelocity.y;
-        b.meshGroup.rotation.z += b.rotVelocity.z;
+        // 3D rotation with natural deceleration until completely stationary
+        const rotDamping = dropF > 0.3 ? 0.82 : 0.92;
+        b.rotVelocity.multiplyScalar(rotDamping);
 
-        deltaPos.copy(b.position).sub(b.meshGroup.position);
-        if (deltaPos.lengthSq() > 0.000001) {
-          rotAxis.set(deltaPos.y, -deltaPos.x, 0).normalize();
-          b.meshGroup.rotateOnWorldAxis(rotAxis, (deltaPos.length() / b.radius) * 0.95);
+        if (b.rotVelocity.lengthSq() < 0.00000005) {
+          b.rotVelocity.set(0, 0, 0);
+        } else {
+          b.meshGroup.rotation.x += b.rotVelocity.x;
+          b.meshGroup.rotation.y += b.rotVelocity.y;
+          b.meshGroup.rotation.z += b.rotVelocity.z;
         }
-        b.rotVelocity.multiplyScalar(0.997);
+
         b.meshGroup.position.copy(b.position);
       }
 
