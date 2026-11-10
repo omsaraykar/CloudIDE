@@ -27,7 +27,6 @@ export default function WelcomePage() {
   const router = useRouter();
   const [username, setUsername] = useState('developer');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [systemStatus, setSystemStatus] = useState<{ dockerAvailable: boolean; platform: string }>({
     dockerAvailable: false,
     platform: 'unknown',
@@ -56,25 +55,6 @@ export default function WelcomePage() {
       setIsSubmitting(false);
     }
   };
-
-  const faqs = [
-    {
-      q: 'How is CloudIDE different from iframe-based playgrounds?',
-      a: 'Unlike front-end browser mock sandboxes, CloudIDE provisions genuine, isolated root Linux Docker containers for every session. You get a real Linux kernel, full file system access, and persistent volume mounts.',
-    },
-    {
-      q: 'Which programming runtimes are pre-installed?',
-      a: 'Workspaces come pre-configured with Node.js v24, Python 3, npm, pnpm, Git, and essential build toolchains. You can also install any custom package via apt or npm inside your container root terminal.',
-    },
-    {
-      q: 'How does the terminal achieve zero-latency performance?',
-      a: 'CloudIDE connects xterm.js directly to native container pseudo-terminals (PTY) through low-latency WebSockets. Key events and ANSI escape sequences stream at 60fps with zero buffer lag.',
-    },
-    {
-      q: 'Are my project files preserved across reloads?',
-      a: 'Yes. Workspace directories are mounted to isolated Docker volumes tied to your username. Your changes, dependencies, and git repositories remain intact when you return.',
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-[#07050d] text-white flex flex-col relative font-sans selection:bg-purple-500/30 selection:text-white">
@@ -117,9 +97,6 @@ export default function WelcomePage() {
           <Link href="#features" className="hover:text-white transition-colors">
             Features
           </Link>
-          <Link href="#faq" className="hover:text-white transition-colors">
-            FAQ
-          </Link>
         </nav>
 
         {/* Right Auth / Action Buttons */}
@@ -143,12 +120,12 @@ export default function WelcomePage() {
       {/* Main Content Area */}
       <main className="relative z-10 flex flex-col pt-20">
         {/* SECTION 1: HERO */}
-        <section id="home" className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-16 pb-24 max-w-5xl mx-auto w-full">
+        <section id="home" className="min-h-screen flex flex-col items-center justify-start text-center px-6 pt-16 md:pt-24 pb-12 max-w-5xl mx-auto w-full">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium mb-6 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#150e26]/80 border border-purple-500/30 text-purple-300 text-xs font-medium mb-5 backdrop-blur-md shadow-lg"
           >
             <Zap className="w-3.5 h-3.5 text-purple-400" />
             <span>Ephemeral Docker Micro-Containers</span>
@@ -158,7 +135,7 @@ export default function WelcomePage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.06] max-w-3xl"
+            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.06] max-w-3xl drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
           >
             Elevate Your <br />
             Coding Experience
@@ -168,7 +145,7 @@ export default function WelcomePage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.16 }}
-            className="text-xs sm:text-sm md:text-base text-zinc-400 max-w-lg mt-5 leading-relaxed font-light"
+            className="text-xs sm:text-sm md:text-base text-zinc-300 max-w-lg mt-4 leading-relaxed font-light drop-shadow-[0_2px_16px_rgba(0,0,0,0.95)]"
           >
             Unlock your development potential in a fully isolated environment, powered by dedicated containers.
           </motion.p>
@@ -178,19 +155,19 @@ export default function WelcomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.22 }}
-            className="flex flex-wrap items-center justify-center gap-2.5 mt-5 text-[11px] text-zinc-300 font-mono"
+            className="flex flex-wrap items-center justify-center gap-2.5 mt-5 text-[11px] text-zinc-200 font-mono"
           >
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0e0a1a]/85 border border-white/[0.12] backdrop-blur-md shadow-lg">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>&lt; 150ms Boot</span>
+              <span className="text-zinc-200 font-medium">&lt; 150ms Boot</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0e0a1a]/85 border border-white/[0.12] backdrop-blur-md shadow-lg">
               <Terminal className="w-3 h-3 text-purple-400" />
-              <span>PTY Shell</span>
+              <span className="text-zinc-200 font-medium">PTY Shell</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0e0a1a]/85 border border-white/[0.12] backdrop-blur-md shadow-lg">
               <ShieldCheck className="w-3 h-3 text-indigo-400" />
-              <span>Kernel Sandboxed</span>
+              <span className="text-zinc-200 font-medium">Kernel Sandboxed</span>
             </div>
           </motion.div>
 
@@ -199,17 +176,17 @@ export default function WelcomePage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.28 }}
-            className="mt-8 relative z-30 w-full max-w-sm"
+            className="mt-7 relative z-30 w-full max-w-sm"
           >
             <form onSubmit={handleEnterPlayground} className="flex items-center justify-center">
-              <div className="flex items-center gap-2 p-1.5 bg-[#120d22]/90 backdrop-blur-xl border border-white/[0.14] rounded-full shadow-2xl hover:border-purple-500/40 transition-all w-full">
-                <span className="text-xs text-purple-300/80 font-mono pl-3.5 select-none">@</span>
+              <div className="flex items-center gap-2 p-1.5 bg-[#100b1e]/95 backdrop-blur-xl border border-white/[0.16] rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.8)] hover:border-purple-500/50 transition-all w-full">
+                <span className="text-xs text-purple-300 font-mono pl-3.5 select-none font-semibold">@</span>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="developer"
-                  className="bg-transparent text-xs text-white placeholder-zinc-500 outline-none flex-1 min-w-0 font-mono"
+                  className="bg-transparent text-xs text-white placeholder-zinc-400 outline-none flex-1 min-w-0 font-mono"
                   required
                 />
                 <button
@@ -227,123 +204,79 @@ export default function WelcomePage() {
           </motion.div>
 
           {/* Scroll Cue */}
-          <div className="mt-14 flex flex-col items-center gap-1.5 text-zinc-400 text-xs font-mono select-none">
-            <span className="uppercase tracking-widest text-[10px] text-zinc-500">Scroll to explore</span>
-            <ChevronDown className="w-4 h-4 animate-bounce text-purple-400" />
+          <div className="mt-8 flex flex-col items-center gap-1 text-zinc-400 text-xs font-mono select-none px-3.5 py-1 rounded-full bg-[#07050d]/80 backdrop-blur-md border border-white/[0.08] shadow-md">
+            <span className="uppercase tracking-widest text-[9px] text-zinc-400 font-medium">Scroll to explore</span>
+            <ChevronDown className="w-3.5 h-3.5 animate-bounce text-purple-400" />
           </div>
         </section>
 
         {/* SECTION 2: FEATURES & WORKFLOW */}
-        <section id="features" className="min-h-screen py-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center">
-          <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3">
-            [ 01 — Developer Experience ]
+        <section id="features" className="min-h-screen py-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center relative z-20">
+          <div className="max-w-2xl mb-12">
+            <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+              [ 01 — Developer Experience ]
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4 leading-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
+              Built for velocity. <br />
+              Engineered for developers.
+            </h2>
+            <p className="text-zinc-200 text-sm leading-relaxed font-light drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] max-w-xl">
+              Skip hours of local environment setup, version conflicts, and missing compiler flags. CloudIDE equips you with a turnkey workstation in seconds.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-6 leading-tight">
-            Built for velocity. <br />
-            Engineered for developers.
-          </h2>
-          <p className="text-zinc-400 text-sm max-w-xl mb-16 leading-relaxed font-light">
-            Skip hours of local environment setup, version conflicts, and missing compiler flags. CloudIDE equips you with a turnkey workstation in seconds.
-          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] backdrop-blur-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400">
+                <div className="p-2.5 rounded-lg bg-purple-500/15 text-purple-400">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Full Linux Root Privileges</h3>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed font-light">
+              <p className="text-xs text-zinc-300 leading-relaxed font-light">
                 Install custom dev tools, compilers, databases, and dependencies directly inside your container shell. Use apt, npm, or curl with zero permission hurdles.
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] backdrop-blur-xl">
+            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <div className="p-2.5 rounded-lg bg-indigo-500/15 text-indigo-400">
                   <Layers className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Persistent File System</h3>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed font-light">
+              <p className="text-xs text-zinc-300 leading-relaxed font-light">
                 Every line of code and package installation is synchronized to your dedicated storage volume. Return anytime from any browser and pick up where you left off.
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] backdrop-blur-xl">
+            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-lg bg-violet-500/10 text-violet-400">
+                <div className="p-2.5 rounded-lg bg-violet-500/15 text-violet-400">
                   <Zap className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Instant One-Click Execution</h3>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed font-light">
+              <p className="text-xs text-zinc-300 leading-relaxed font-light">
                 Execute code scripts with a dedicated execution button, streaming process standard output, stderr, and execution benchmarks directly into the UI panel.
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] backdrop-blur-xl">
+            <div className="p-8 rounded-2xl bg-[#0c0818]/90 border border-white/[0.12] backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:border-purple-500/40 transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-lg bg-pink-500/10 text-pink-400">
+                <div className="p-2.5 rounded-lg bg-pink-500/15 text-pink-400">
                   <Laptop className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Device Agnostic Access</h3>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed font-light">
+              <p className="text-xs text-zinc-300 leading-relaxed font-light">
                 Code on a Chromebook, iPad, low-powered ultrabook, or high-end workstation. Heavy builds, compilations, and tests execute in the container, not on your battery.
               </p>
             </div>
           </div>
         </section>
 
-        {/* SECTION 3: FAQ & INTERACTIVE ACCORDION */}
-        <section id="faq" className="min-h-screen py-24 px-6 md:px-16 max-w-4xl mx-auto w-full flex flex-col justify-center">
-          <div className="text-center mb-16">
-            <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3">
-              [ 02 — Knowledge Base ]
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-zinc-400 text-sm max-w-lg mx-auto font-light">
-              Everything you need to know about the CloudIDE container runtime and development workflows.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {faqs.map((faq, idx) => {
-              const isOpen = activeFaq === idx;
-              return (
-                <div
-                  key={idx}
-                  onClick={() => setActiveFaq(isOpen ? null : idx)}
-                  className="p-6 rounded-2xl bg-zinc-950/60 backdrop-blur-xl border border-white/[0.08] hover:border-purple-500/30 transition-all cursor-pointer select-none"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <h3 className="text-base font-semibold text-white">{faq.q}</h3>
-                    <ChevronDown
-                      className={`w-4 h-4 text-purple-400 transition-transform duration-300 shrink-0 ${
-                        isOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </div>
-                  {isOpen && (
-                    <motion.p
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="mt-4 text-xs sm:text-sm text-zinc-400 leading-relaxed font-light border-t border-white/[0.06] pt-4"
-                    >
-                      {faq.a}
-                    </motion.p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* SECTION 4: FOOTER & STATUS */}
+        {/* SECTION 3: FOOTER & STATUS */}
         <footer className="border-t border-white/[0.08] bg-[#050309]/80 backdrop-blur-xl py-16 px-6 md:px-16 relative z-20">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex flex-col items-center md:items-start gap-2">
@@ -378,9 +311,6 @@ export default function WelcomePage() {
               </Link>
               <Link href="#features" className="hover:text-white transition-colors">
                 Features
-              </Link>
-              <Link href="#faq" className="hover:text-white transition-colors">
-                FAQ
               </Link>
             </div>
           </div>
