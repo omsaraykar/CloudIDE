@@ -187,39 +187,10 @@ export function HeroCanvas3D() {
       else if (r < 0.82) radius = 0.32 + Math.random() * 0.14;
       else radius = 0.48 + Math.random() * 0.14;
 
-      // Varied cuboid aspect ratios (slabs, blocks, elongated bricks, cubes)
-      const shapeType = Math.random();
-      let aspectX = 1;
-      let aspectY = 1;
-      let aspectZ = 1;
-      if (shapeType < 0.28) {
-        // Flat slab / tile
-        aspectX = 1.25 + Math.random() * 0.25;
-        aspectY = 0.75 + Math.random() * 0.2;
-        aspectZ = 1.1 + Math.random() * 0.25;
-      } else if (shapeType < 0.55) {
-        // Tall block
-        aspectX = 0.8 + Math.random() * 0.2;
-        aspectY = 1.3 + Math.random() * 0.3;
-        aspectZ = 0.85 + Math.random() * 0.25;
-      } else if (shapeType < 0.8) {
-        // Elongated brick
-        aspectX = 1.35 + Math.random() * 0.25;
-        aspectY = 0.85 + Math.random() * 0.2;
-        aspectZ = 0.8 + Math.random() * 0.2;
-      } else {
-        // Near-cubic block
-        aspectX = 1.0 + Math.random() * 0.15;
-        aspectY = 1.0 + Math.random() * 0.15;
-        aspectZ = 1.0 + Math.random() * 0.15;
-      }
-
+      // Uniform cubic dimensions: all shapes are pure square cubes
       const baseDim = radius * 1.5;
-      const dimX = baseDim * aspectX;
-      const dimY = baseDim * aspectY;
-      const dimZ = baseDim * aspectZ;
-      const dimensions = new THREE.Vector3(dimX, dimY, dimZ);
-      const visualScale = Math.max(dimX, dimY, dimZ) * 0.52;
+      const dimensions = new THREE.Vector3(baseDim, baseDim, baseDim);
+      const visualScale = baseDim * 0.52;
 
       const mass = Math.pow(radius, 3);
       const isGlass = Math.random() < 0.22;
