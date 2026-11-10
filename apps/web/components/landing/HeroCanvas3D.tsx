@@ -90,6 +90,9 @@ export function HeroCanvas3D() {
         metalness: 0.10,
         clearcoat: 0.25, // Gentle sheen
         clearcoatRoughness: 0.35,
+        transparent: true,
+        opacity: 0.62,
+        depthWrite: true,
       })
     );
 
