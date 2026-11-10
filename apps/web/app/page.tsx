@@ -13,7 +13,6 @@ import {
   Layers,
   CheckCircle2,
   ArrowRight,
-  Code2,
   Laptop,
 } from 'lucide-react';
 import { api } from '../lib/api';
@@ -80,13 +79,10 @@ export default function WelcomePage() {
       <div className="fixed top-10 right-0 w-[450px] h-[450px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none z-0" />
 
       {/* Fixed Top Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 h-20 px-8 md:px-16 flex items-center justify-between z-40 backdrop-blur-md bg-[#07050d]/60 border-b border-white/[0.06] select-none">
-        {/* Brand Logo */}
-        <Link href="#home" className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-white hover:opacity-90 transition-opacity">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Code2 className="w-4 h-4 text-white" />
-          </div>
-          <span>CloudIDE</span>
+      <header className="fixed top-0 left-0 right-0 h-20 px-8 md:px-16 flex items-center justify-between z-40 bg-transparent select-none">
+        {/* Brand Wordmark */}
+        <Link href="#home" className="text-lg font-bold tracking-tight text-white hover:opacity-85 transition-opacity">
+          CloudIDE
         </Link>
 
         {/* Center Nav Links */}
@@ -103,7 +99,7 @@ export default function WelcomePage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleEnterPlayground()}
-            className="text-xs font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-full bg-zinc-900/90 hover:bg-zinc-800 border border-white/[0.12] transition-all cursor-pointer"
+            className="text-xs font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] backdrop-blur-sm transition-all cursor-pointer"
           >
             Sign In
           </button>
@@ -280,9 +276,8 @@ export default function WelcomePage() {
         <footer className="border-t border-white/[0.08] bg-[#050309]/80 backdrop-blur-xl py-16 px-6 md:px-16 relative z-20">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex flex-col items-center md:items-start gap-2">
-              <div className="flex items-center gap-2 text-lg font-bold text-white">
-                <Code2 className="w-5 h-5 text-purple-400" />
-                <span>CloudIDE</span>
+              <div className="text-lg font-bold tracking-tight text-white">
+                CloudIDE
               </div>
               <p className="text-xs text-zinc-500 font-light">
                 © 2026 CloudIDE Digital Systems. All rights reserved.
