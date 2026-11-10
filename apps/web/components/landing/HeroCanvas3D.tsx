@@ -342,7 +342,7 @@ export function HeroCanvas3D() {
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
     // Dynamic Cluster Center (Centered gracefully in the lower hero region framing the CTA)
-    const clusterCenter = new THREE.Vector3(0, -1.35, 0);
+    const clusterCenter = new THREE.Vector3(0, -1.5, 0);
 
     // 8. Mouse & Pointer Tracking
     const mousePos = { x: 99, y: 99, isDown: false };
