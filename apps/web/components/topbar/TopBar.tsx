@@ -52,14 +52,9 @@ export function TopBar() {
 
         <div className="h-3.5 w-[1px] bg-white/[0.1] mx-0.5" />
 
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-zinc-800 border border-white/[0.1] flex items-center justify-center text-[10px] font-mono text-zinc-300">
-            &gt;_
-          </div>
-          <span className="font-medium text-xs text-zinc-200 tracking-tight">
-            CloudIDE
-          </span>
-        </div>
+        <span className="font-medium text-xs text-zinc-200 tracking-tight">
+          CloudIDE
+        </span>
 
         <div className="h-3.5 w-[1px] bg-white/[0.1] mx-0.5" />
 
