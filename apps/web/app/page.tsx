@@ -26,7 +26,6 @@ export default function WelcomePage() {
   const router = useRouter();
   const [username, setUsername] = useState('developer');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [systemStatus, setSystemStatus] = useState<{ dockerAvailable: boolean; platform: string }>({
     dockerAvailable: false,
@@ -114,31 +113,6 @@ export default function WelcomePage() {
         {/* Right Actions */}
         <div className="flex items-center gap-3.5">
           <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="w-11 h-11 rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-xl shadow-lg flex items-center justify-center text-white hover:bg-white/[0.15] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            aria-label="Open workspace controls"
-          >
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-            >
-              <line x1="4" y1="21" x2="4" y2="14" />
-              <line x1="4" y1="10" x2="4" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12" y2="3" />
-              <line x1="20" y1="21" x2="20" y2="16" />
-              <line x1="20" y1="12" x2="20" y2="3" />
-              <line x1="2" y1="14" x2="6" y2="14" />
-              <line x1="10" y1="8" x2="14" y2="8" />
-              <line x1="18" y1="16" x2="22" y2="16" />
-            </svg>
-          </button>
-          <button
             onClick={() => handleEnterPlayground()}
             className="inline-flex items-center gap-4 pl-6 pr-1.5 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 shadow-lg text-sm font-medium text-white hover:border-purple-400/50 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
@@ -160,79 +134,6 @@ export default function WelcomePage() {
           </button>
         </div>
       </header>
-
-      {/* Slide-over Workspace Controls Drawer */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setIsDrawerOpen(false)}
-          />
-          <div className="relative w-full max-w-sm bg-[#0a0714]/95 border-l border-white/[0.12] backdrop-blur-2xl p-8 flex flex-col justify-between z-10 shadow-2xl">
-            <div>
-              <div className="flex items-center justify-between pb-6 border-b border-white/[0.08]">
-                <div className="text-sm font-mono tracking-widest uppercase text-purple-400 font-bold">
-                  [ Workspace Controls ]
-                </div>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="mt-8 flex flex-col gap-6">
-                <div>
-                  <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider block mb-2">
-                    Container Username
-                  </label>
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.04] border border-white/10">
-                    <span className="text-xs text-purple-400 font-mono pl-1 select-none font-semibold">@</span>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="developer"
-                      className="bg-transparent text-xs text-white outline-none flex-1 font-mono placeholder-zinc-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">
-                    Runtime Architecture
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
-                    <span className="text-zinc-300">Docker Micro-Container</span>
-                    <span className="text-emerald-400 font-mono text-[11px] font-semibold">Isolated</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
-                    <span className="text-zinc-300">PTY WebSocket Shell</span>
-                    <span className="text-purple-400 font-mono text-[11px] font-semibold">&lt; 150ms Boot</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
-                    <span className="text-zinc-300">Storage Volume Mount</span>
-                    <span className="text-indigo-400 font-mono text-[11px] font-semibold">Persistent</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setIsDrawerOpen(false);
-                handleEnterPlayground();
-              }}
-              disabled={isSubmitting}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white text-xs font-semibold shadow-lg shadow-purple-500/30 hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <span>Launch Workspace</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Main Content Area */}
       <main className="relative z-10 flex flex-col">
