@@ -54,14 +54,14 @@ export default function WelcomePage() {
 
   return (
     <div className="min-h-screen bg-[#07050d] text-white flex flex-col relative overflow-hidden font-sans selection:bg-purple-500/30 selection:text-white">
-      {/* 3D Organic Liquid Blob Canvas Background & CSS Post-Processing Layering */}
+      {/* 3D Gravity Spheres Canvas Background & CSS Post-Processing Layering */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Soft violet radial bloom under canvas */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_100%,rgba(124,58,237,0.35),transparent_70%)]" />
+        {/* Soft royal blue & indigo radial bloom under canvas */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_80%,rgba(47,105,255,0.25),transparent_70%)]" />
         <HeroCanvas3D />
-        {/* Film grain texture to hide gradient banding and add tactile organic depth */}
+        {/* Film grain texture to hide gradient banding and add tactile depth */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07] mix-blend-overlay"
+          className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
           style={{
             backgroundImage:
               'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\'><filter id=\'n\'><feTurbulence baseFrequency=\'.8\' numOctaves=\'2\'/></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23n)\'/></svg>")',

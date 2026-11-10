@@ -3,6 +3,25 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
+interface Ball {
+  id: number;
+  radius: number;
+  mass: number;
+  position: THREE.Vector3;
+  velocity: THREE.Vector3;
+  meshGroup: THREE.Group;
+  sphere: THREE.Mesh;
+  material: THREE.MeshPhysicalMaterial;
+  role: 'pastel' | 'light' | 'medium' | 'deep' | 'glass';
+  isGlass: boolean;
+  visualScale: number;
+  color: THREE.Color;
+  restPosition: THREE.Vector3;
+  shapeTarget: THREE.Vector3;
+  angleY: number;
+  angleZ: number;
+}
+
 export function HeroCanvas3D() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -17,19 +36,18 @@ export function HeroCanvas3D() {
       return item;
     };
 
-    // Performance & Accessibility checks
+    // Performance & Motion check
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let isVisible = true;
 
-    // 1. Scene & Camera Setup
-    const scene = new THREE.Scene();
-
+    // Dimensions
     const getWidth = () => container.clientWidth || window.innerWidth;
     const getHeight = () => container.clientHeight || window.innerHeight;
 
-    const camera = new THREE.PerspectiveCamera(40, getWidth() / getHeight(), 0.1, 100);
-    camera.position.set(0, 0.1, 9.2);
-    camera.lookAt(0, -0.4, 0);
+    // 1. Scene, Camera & Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, getWidth() / getHeight(), 0.1, 100);
+    camera.position.set(0, 0, 11);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -37,222 +55,84 @@ export function HeroCanvas3D() {
       powerPreference: 'high-performance',
     });
     renderer.setSize(getWidth(), getHeight());
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.style.opacity = '0';
-    renderer.domElement.style.transition = 'opacity 0.6s ease';
+    renderer.domElement.style.transition = 'opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
     container.appendChild(renderer.domElement);
 
-    // 2. High-End Studio Environment Map (Single Soft Top-Left Softbox)
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const envScene = new THREE.Scene();
-    const addSoftbox = (
-      w: number,
-      h: number,
-      color: number,
-      intensity: number,
-      pos: [number, number, number]
-    ) => {
-      const planeMat = register(
-        new THREE.MeshBasicMaterial({
-          color: new THREE.Color(color).multiplyScalar(intensity),
-          side: THREE.DoubleSide,
-        })
-      );
-      const m = new THREE.Mesh(register(new THREE.PlaneGeometry(w, h)), planeMat);
-      m.position.set(...pos);
-      m.lookAt(0, 0, 0);
-      envScene.add(m);
+    // Fade in renderer
+    requestAnimationFrame(() => {
+      if (renderer.domElement) {
+        renderer.domElement.style.opacity = '1';
+      }
+    });
+
+    // 2. Palette & Dynamic Color Mapping (Royal Blue & Pearl Studio from CodePen)
+    const getDynamicColors = (baseColor: string) => {
+      const hex = baseColor.toLowerCase();
+      if (hex === '#2f69ff') {
+        return {
+          pastel: new THREE.Color('#ECEFFF'), // Clean Pearl White
+          light: new THREE.Color('#A8C1FF'),  // Soft Ice Blue
+          medium: new THREE.Color('#2F69FF'), // Royal Cobalt Blue
+          deep: new THREE.Color('#0A33BF'),   // Deep Sapphire Navy
+          glass: new THREE.Color('#4D80FF'),  // Translucent Azure Glass
+        };
+      }
+      const c = new THREE.Color(baseColor);
+      return {
+        pastel: c.clone().offsetHSL(0, -0.15, 0.25),
+        light: c.clone().offsetHSL(0, -0.05, 0.12),
+        medium: c.clone(),
+        deep: c.clone().offsetHSL(0.01, 0.1, -0.12),
+        glass: c.clone(),
+      };
     };
 
-    // Single soft top-left light strip on black background: reflections only on lit side
-    addSoftbox(14, 3.5, 0xc084fc, 6.0, [-8, 7, 4]);
+    const palette = getDynamicColors('#2f69ff');
+    const ROLES = ['pastel', 'light', 'medium', 'deep', 'glass'] as const;
+    const curPal: Record<string, THREE.Color> = {};
+    ROLES.forEach((r) => {
+      curPal[r] = palette[r].clone();
+    });
 
-    const envTex = pmrem.fromScene(envScene, 0.04).texture;
-    register(envTex);
-    pmrem.dispose();
+    // 3. Studio Lighting (Matching CodePen)
+    const hemiLight = new THREE.HemisphereLight(0xffffff, new THREE.Color(palette.medium), 1.6);
+    scene.add(hemiLight);
 
-    // 3. Cinematic Directional Lighting (Dominant Top-Left Key Light + Dark Shadows)
-    const ambientLight = new THREE.AmbientLight(0x0a0414, 0.08);
-    scene.add(ambientLight);
+    const key = new THREE.DirectionalLight(0xffffff, 1.5);
+    key.position.set(-6, 10, 8);
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024);
+    Object.assign(key.shadow.camera, {
+      near: 0.5,
+      far: 30,
+      left: -8,
+      right: 8,
+      top: 8,
+      bottom: -8,
+    });
+    key.shadow.bias = -0.0003;
+    key.shadow.radius = 8;
+    scene.add(key);
 
-    const lightTarget = new THREE.Object3D();
-    lightTarget.position.set(0, -4.55, 0.4);
-    scene.add(lightTarget);
+    const rim = new THREE.DirectionalLight(0xffffff, 1.25);
+    rim.position.set(8, 7, -8);
+    scene.add(rim);
 
-    // Dominant key light from top-left (fixed in world space)
-    const keyLight = new THREE.DirectionalLight(0xc084fc, 5.5);
-    keyLight.position.set(-7, 7, 4);
-    keyLight.target = lightTarget;
-    scene.add(keyLight);
+    const front = new THREE.DirectionalLight(0xffffff, 0.4);
+    front.position.set(0, 0, 11);
+    scene.add(front);
 
-    // Faint indigo rim accent on bottom-right silhouette only (< 0.6)
-    const rimAccent = new THREE.DirectionalLight(0x6366f1, 0.38);
-    rimAccent.position.set(7, -5, -3.5);
-    rimAccent.target = lightTarget;
-    scene.add(rimAccent);
+    const side = new THREE.DirectionalLight(0xffffff, 0.3);
+    side.position.set(-9, -2, 4);
+    scene.add(side);
 
-    // 4. Upgraded Physical Satin & Sheen Material with Iridescence & Deep Shadows
-    const sphereGeo = register(new THREE.SphereGeometry(3.9, 128, 128));
-
-    const customUniforms = {
-      uTime: { value: 0 },
-      uNoiseFreq: { value: 0.38 },
-      uNoiseSpeed: { value: prefersReducedMotion ? 0.03 : 0.18 },
-      uDisplacement: { value: 0.40 },
-    };
-
-    const blobMat = register(
-      new THREE.MeshPhysicalMaterial({
-        color: 0x0d0618,
-        roughness: 0.38,
-        metalness: 0.0,
-        clearcoat: 0.6,
-        clearcoatRoughness: 0.25,
-        sheen: 1.0,
-        sheenRoughness: 0.45,
-        sheenColor: new THREE.Color(0x8b5cf6), // velvet edge sheen
-        iridescence: 0.25,                     // subtle oil-slick shift
-        iridescenceIOR: 1.3,
-        iridescenceThicknessMinimum: 200,
-        iridescenceThicknessMaximum: 450,
-        envMap: envTex,
-        envMapIntensity: 0.9,
-        emissive: 0x06020e,
-        emissiveIntensity: 0.08,
-        transparent: false,
-        opacity: 1.0,
-        depthWrite: true,
-      })
-    );
-
-    // Custom Simplex noise displacement + Fresnel rim glow and crest tinting via vDisp
-    blobMat.onBeforeCompile = (shader) => {
-      shader.uniforms.uTime = customUniforms.uTime;
-      shader.uniforms.uNoiseFreq = customUniforms.uNoiseFreq;
-      shader.uniforms.uNoiseSpeed = customUniforms.uNoiseSpeed;
-      shader.uniforms.uDisplacement = customUniforms.uDisplacement;
-
-      shader.vertexShader = 'varying float vDisp;\n' + shader.vertexShader;
-
-      shader.vertexShader = `
-        uniform float uTime;
-        uniform float uNoiseFreq;
-        uniform float uNoiseSpeed;
-        uniform float uDisplacement;
-
-        // 3D Simplex noise
-        vec4 permute(vec4 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-
-        float snoise(vec3 v) {
-          const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-          const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-          vec3 i = floor(v + dot(v, C.yyy));
-          vec3 x0 = v - i + dot(i, C.xxx);
-          vec3 g = step(x0.yzx, x0.xyz);
-          vec3 l = 1.0 - g;
-          vec3 i1 = min(g.xyz, l.zxy);
-          vec3 i2 = max(g.xyz, l.zxy);
-          vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-          vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-          vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
-          i = mod(i, 289.0);
-          vec4 p = permute(permute(permute(
-                     i.z + vec4(0.0, i1.z, i2.z, 1.0))
-                   + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-                   + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-          float n_ = 0.142857142857;
-          vec3 ns = n_ * D.wyz - D.xzx;
-          vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-          vec4 x_ = floor(j * ns.z);
-          vec4 y_ = floor(j - 7.0 * x_);
-          vec4 x = x_ *ns.x + ns.yyyy;
-          vec4 y = y_ *ns.x + ns.yyyy;
-          vec4 h = 1.0 - abs(x) - abs(y);
-          vec4 b0 = vec4(x.xy, y.xy);
-          vec4 b1 = vec4(x.zw, y.zw);
-          vec4 s0 = floor(b0)*2.0 + 1.0;
-          vec4 s1 = floor(b1)*2.0 + 1.0;
-          vec4 sh = -step(h, vec4(0.0));
-          vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-          vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-          vec3 p0 = vec3(a0.xy, h.x);
-          vec3 p1 = vec3(a0.zw, h.y);
-          vec3 p2 = vec3(a1.xy, h.z);
-          vec3 p3 = vec3(a1.zw, h.w);
-          vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-          p0 *= norm.x;
-          p1 *= norm.y;
-          p2 *= norm.z;
-          p3 *= norm.w;
-          vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-          m = m * m;
-          return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-        }
-
-        float getDisplacement(vec3 p) {
-          float t = uTime * uNoiseSpeed;
-          float n1 = snoise(p * uNoiseFreq + vec3(0.0, t * 0.7, t * 0.5)) * 0.65;
-          float n2 = snoise(p * (uNoiseFreq * 2.2) - vec3(t * 0.6, 0.0, t * 0.4)) * 0.35;
-          return (n1 + n2) * uDisplacement;
-        }
-      ` + shader.vertexShader;
-
-      shader.vertexShader = shader.vertexShader.replace(
-        '#include <defaultnormal_vertex>',
-        `
-        vec3 tNormal = normal;
-        vec3 tangent = normalize(abs(tNormal.y) < 0.999 ? cross(tNormal, vec3(0.0, 1.0, 0.0)) : cross(tNormal, vec3(1.0, 0.0, 0.0)));
-        vec3 bitangent = cross(tNormal, tangent);
-        float eps = 0.02;
-
-        vec3 p0 = position + tNormal * getDisplacement(position);
-        vec3 p1 = position + tangent * eps + tNormal * getDisplacement(position + tangent * eps);
-        vec3 p2 = position + bitangent * eps + tNormal * getDisplacement(position + bitangent * eps);
-
-        vec3 computedNormal = normalize(cross(p1 - p0, p2 - p0));
-        objectNormal = computedNormal;
-        vec3 transformedNormal = normalMatrix * computedNormal;
-        #ifdef USE_TANGENT
-          vec3 transformedTangent = (modelViewMatrix * vec4(tangent, 0.0)).xyz;
-        #endif
-
-        vDisp = getDisplacement(position) / max(uDisplacement, 0.001);
-        `
-      );
-
-      shader.vertexShader = shader.vertexShader.replace(
-        '#include <begin_vertex>',
-        `
-        vec3 transformed = p0;
-        `
-      );
-
-      // Fragment: Fresnel rim glow + displacement crest tinting focused on lit side
-      shader.fragmentShader = 'varying float vDisp;\n' + shader.fragmentShader;
-      shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <emissivemap_fragment>',
-        `
-        #include <emissivemap_fragment>
-        vec3 vDir = normalize(vViewPosition);
-        float fres = pow(1.0 - saturate(dot(normal, vDir)), 3.0);
-        vec3 rimCol = mix(vec3(0.35, 0.18, 0.9), vec3(0.9, 0.35, 0.85), vDisp * 0.5 + 0.5);
-        // Align glow with top-left dominant key light, allowing shadow side to fall into deep darkness
-        float litSide = smoothstep(-0.25, 0.45, dot(normal, normalize(vec3(-0.7, 0.7, 0.35))));
-        totalEmissiveRadiance += rimCol * fres * 0.85 * litSide;
-        totalEmissiveRadiance += vec3(0.22, 0.07, 0.45) * smoothstep(0.1, 0.6, vDisp) * 0.28 * litSide;
-        `
-      );
-    };
-
-    const blobMesh = new THREE.Mesh(sphereGeo, blobMat);
-    blobMesh.position.set(0, -4.55, 0.4);
-    blobMesh.scale.set(1.4, 1.05, 1.25);
-    scene.add(blobMesh);
-
-    // 5. Restrained Starfield with Soft Circular Radial Texture
+    // 4. Subtle Ambient Cosmic Starfield in Deep Background
     const createCircleTexture = () => {
       const c = document.createElement('canvas');
       c.width = 32;
@@ -261,8 +141,8 @@ export function HeroCanvas3D() {
       if (ctx) {
         const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
         grad.addColorStop(0, 'rgba(255,255,255,1)');
-        grad.addColorStop(0.35, 'rgba(221,214,254,0.7)');
-        grad.addColorStop(1, 'rgba(221,214,254,0)');
+        grad.addColorStop(0.35, 'rgba(168,193,255,0.7)');
+        grad.addColorStop(1, 'rgba(168,193,255,0)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 32, 32);
       }
@@ -273,18 +153,17 @@ export function HeroCanvas3D() {
     const starGeo = register(new THREE.BufferGeometry());
     const starPositions = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount; i++) {
-      starPositions[i * 3] = (Math.random() - 0.5) * 30;
-      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      starPositions[i * 3 + 2] = -7.5 - Math.random() * 10.0;
+      starPositions[i * 3] = (Math.random() - 0.5) * 32;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 22;
+      starPositions[i * 3 + 2] = -9.0 - Math.random() * 8.0;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-
     const starMat = register(
       new THREE.PointsMaterial({
-        size: 0.14,
+        size: 0.13,
         map: createCircleTexture(),
         transparent: true,
-        opacity: 0.45,
+        opacity: 0.35,
         blending: THREE.AdditiveBlending,
         depthTest: true,
         depthWrite: false,
@@ -293,25 +172,228 @@ export function HeroCanvas3D() {
     const starMesh = new THREE.Points(starGeo, starMat);
     scene.add(starMesh);
 
-    // 6. Smooth Damped Mouse Tracking
-    const mouse = {
-      targetX: 0,
-      targetY: 0,
-      currentX: 0,
-      currentY: 0,
+    // 5. Frustum Viewport Bounds Calculation
+    let viewportHeight = 6;
+    let viewportWidth = 10;
+    const updateFrustumBounds = () => {
+      const fov = THREE.MathUtils.degToRad(camera.fov);
+      viewportHeight = 2 * Math.tan(fov / 2) * camera.position.z;
+      viewportWidth = viewportHeight * (getWidth() / getHeight());
+    };
+    updateFrustumBounds();
+
+    // 6. Spheres Initialization
+    const mobile = getWidth() < 768;
+    const n = mobile ? 54 : 96;
+    const sphereGeometry = register(new THREE.SphereGeometry(1, 40, 40));
+
+    let balls: Ball[] = [];
+    for (let i = 0; i < n; i++) {
+      let radius = 0.33;
+      const r = Math.random();
+      if (r < 0.3) radius = 0.27 + Math.random() * 0.12;
+      else if (r < 0.8) radius = 0.42 + Math.random() * 0.18;
+      else radius = 0.66 + Math.random() * 0.21;
+
+      const mass = Math.pow(radius, 3);
+      const isGlass = Math.random() < 0.22;
+      let role: 'pastel' | 'light' | 'medium' | 'deep' | 'glass' = 'medium';
+      let mat: THREE.MeshPhysicalMaterial;
+      let color: THREE.Color;
+
+      if (isGlass) {
+        mat = register(
+          new THREE.MeshPhysicalMaterial({
+            color: palette.glass,
+            roughness: 0.08,
+            metalness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0.03,
+            transmission: 0.95,
+            ior: 1.485,
+            thickness: 2.2,
+            specularColor: new THREE.Color('#ffffff'),
+            specularIntensity: 1,
+            attenuationColor: palette.pastel,
+            attenuationDistance: 1,
+            emissive: palette.glass,
+            emissiveIntensity: 0.12,
+            transparent: true,
+          })
+        );
+        color = palette.glass;
+        role = 'glass';
+      } else {
+        const cr = Math.random();
+        let chosen = palette.medium;
+        if (cr < 0.25) {
+          chosen = palette.pastel;
+          role = 'pastel';
+        } else if (cr < 0.55) {
+          chosen = palette.light;
+          role = 'light';
+        } else if (cr < 0.85) {
+          chosen = palette.medium;
+          role = 'medium';
+        } else {
+          chosen = palette.deep;
+          role = 'deep';
+        }
+
+        mat = register(
+          new THREE.MeshPhysicalMaterial({
+            color: chosen,
+            roughness: 0.44,
+            metalness: 0,
+            clearcoat: 0.24,
+            clearcoatRoughness: 0.35,
+            emissive: chosen,
+            emissiveIntensity: 0.08,
+            transparent: true,
+          })
+        );
+        color = chosen;
+      }
+
+      const group = new THREE.Group();
+      const mesh = new THREE.Mesh(sphereGeometry, mat);
+      mesh.scale.setScalar(radius);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+      scene.add(group);
+
+      balls.push({
+        id: i,
+        radius,
+        mass,
+        position: new THREE.Vector3(),
+        velocity: new THREE.Vector3(),
+        meshGroup: group,
+        sphere: mesh,
+        material: mat,
+        role,
+        isGlass,
+        visualScale: radius,
+        color,
+        restPosition: new THREE.Vector3(),
+        shapeTarget: new THREE.Vector3(),
+        angleY: Math.random() * Math.PI * 2,
+        angleZ: 0.1 + Math.random() * 0.45,
+      });
+    }
+
+    const meanRadius = balls.reduce((s, b) => s + b.radius, 0) / balls.length;
+
+    // Heart Target Formation (Form Stage when scrolled)
+    const inHeart = (x: number, y: number) => {
+      const a = x * x + y * y - 1;
+      return a * a * a - x * x * y * y * y <= 0;
     };
 
+    let shapeScale = 1;
+    const assignHeartTargets = () => {
+      if (!balls.length) return;
+      const S = Math.min(viewportWidth * 0.3, viewportHeight * 0.27);
+      const baseCY = -viewportHeight * 0.03;
+      shapeScale = Math.max(0.3, Math.min(1, (S * 0.45) / 2.3 / meanRadius));
+      for (let i = 0; i < balls.length; i++) {
+        let x = 0;
+        let y = 0;
+        let tries = 0;
+        do {
+          x = (Math.random() * 2 - 1) * 1.25;
+          y = Math.random() * 2.55 - 1.4;
+          tries++;
+        } while (!inHeart(x, y) && tries < 60);
+        balls[i].shapeTarget.set(x * S, (y + 0.12) * S + baseCY, (Math.random() - 0.5) * 0.35);
+      }
+    };
+    assignHeartTargets();
+
+    // Scatter Entrance Mechanism
+    const scatterFar = (inward: boolean) => {
+      const R = Math.max(viewportWidth, viewportHeight) * 1.5;
+      for (const b of balls) {
+        const a = Math.random() * Math.PI * 2;
+        const px = Math.cos(a) * R * 1.25;
+        const py = Math.sin(a) * R * 0.85;
+        const pz = (Math.random() - 0.5) * 4;
+        b.position.set(px, py, pz);
+        b.meshGroup.position.copy(b.position);
+        if (inward) {
+          b.velocity
+            .set(-px, -py, -pz)
+            .normalize()
+            .multiplyScalar(0.09 + Math.random() * 0.05);
+        } else {
+          b.velocity.set(0, 0, 0);
+        }
+      }
+    };
+
+    // 7. Physics & Gravity Simulation Parameters
+    const params = {
+      gravity: 0,
+      rebound: -0.3,
+      mouseRepelForce: 0.05,
+      mouseRepelRadius: 4.4,
+      damping: 0.91,
+      centerAttractForce: 0.0035,
+      bounciness: 0.02,
+    };
+
+    // Math utility helpers
+    const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+    const smoothstep = (a: number, b: number, x: number) => {
+      const t = clamp01((x - a) / (b - a));
+      return t * t * (3 - 2 * t);
+    };
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    // Dynamic Cluster Center (Centered gracefully in the lower hero region framing the CTA)
+    const clusterCenter = new THREE.Vector3(0, -1.35, 0);
+
+    // 8. Mouse & Pointer Tracking
+    const mousePos = { x: 99, y: 99, isDown: false };
+    const prevMouseWorld = new THREE.Vector3();
+    const mouseProjVec = new THREE.Vector3();
+    const mouseWorld3D = new THREE.Vector3();
+    const diffVec = new THREE.Vector3();
+    const collideDiff = new THREE.Vector3();
+    const relVel = new THREE.Vector3();
+    const deltaPos = new THREE.Vector3();
+    const rotAxis = new THREE.Vector3();
+
     const onPointerMove = (e: PointerEvent) => {
-      const rect = container.getBoundingClientRect();
-      const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1; // -1 (left) to +1 (right)
-      const normY = ((e.clientY - rect.top) / rect.height) * 2 - 1; // -1 (top/up) to +1 (bottom/down)
-      mouse.targetX = normX;
-      mouse.targetY = normY;
+      mousePos.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mousePos.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    const onPointerDown = () => {
+      mousePos.isDown = true;
+    };
+    const onPointerUp = () => {
+      mousePos.isDown = false;
+    };
+    const onWindowBlur = () => {
+      mousePos.isDown = false;
     };
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('blur', onWindowBlur);
 
-    // 7. Visibility & Intersection Observers
+    const updateMouse3D = () => {
+      mouseProjVec.set(mousePos.x, mousePos.y, 0.5);
+      mouseProjVec.unproject(camera);
+      const dir = mouseProjVec.sub(camera.position).normalize();
+      const distance = (clusterCenter.z - camera.position.z) / dir.z;
+      mouseWorld3D.copy(camera.position).add(dir.multiplyScalar(distance));
+    };
+
+    // 9. Visibility & Intersection Management
     const onVisibilityChange = () => {
       isVisible = document.visibilityState === 'visible';
     };
@@ -325,64 +407,228 @@ export function HeroCanvas3D() {
     );
     intersectionObserver.observe(container);
 
-    // 8. Animation Loop with Cinematic Intro & Intentional Motion
+    // Initial scatter inward
+    scatterFar(true);
+    const startTime = performance.now() * 0.001;
+    const entranceStart = startTime;
+
+    // 10. Physics Simulation & Render Loop
     let animationFrameId: number;
-    const startTime = performance.now();
-    let lastTime = performance.now();
 
-    const damp = (a: number, b: number, k: number, dt: number) =>
-      a + (b - a) * (1 - Math.exp(-k * dt));
-
-    const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
+    const simulateAndRender = () => {
+      animationFrameId = requestAnimationFrame(simulateAndRender);
       if (!isVisible) return;
 
-      const now = performance.now();
-      const delta = Math.min((now - lastTime) * 0.001, 0.1);
-      lastTime = now;
+      const now = performance.now() * 0.001;
+      const time = now - startTime;
+      updateMouse3D();
 
-      const elapsed = (now - startTime) * 0.001;
+      // Scroll Progress for Physics Morphing (Hero cluster -> Gravity drop -> Heart form -> Fly)
+      const scrollY = window.scrollY || 0;
+      const vh = window.innerHeight || 1;
+      const progress = scrollY / vh;
 
-      // Cinematic Intro Swell & Fade-in
-      const intro = 1 - Math.pow(1 - Math.min(elapsed / 2.4, 1), 3); // easeOutCubic
-      customUniforms.uTime.value = elapsed;
-      customUniforms.uDisplacement.value = 0.40 * intro;
-      blobMesh.position.y = -4.55 - (1 - intro) * 1.4;
-      renderer.domElement.style.opacity = String(Math.min(elapsed / 1.2, 1));
+      const heroF = 1 - smoothstep(0.3, 0.8, progress);
+      const dropRaw = smoothstep(0.4, 0.95, progress);
+      const flyF = smoothstep(2.7, 3.45, progress);
+      const shapeF = smoothstep(1.4, 2.05, progress) * (1 - smoothstep(2.55, 3, progress));
+      const dropF = dropRaw * (1 - smoothstep(1.25, 1.75, progress));
 
-      // Frame-rate independent exponential damping
-      mouse.currentX = damp(mouse.currentX, mouse.targetX, 3.5, delta);
-      mouse.currentY = damp(mouse.currentY, mouse.targetY, 3.5, delta);
+      const entranceT = easeOutCubic(clamp01((time - entranceStart) / 2.2));
+      const attractionBoost = lerp(7.5, 1, entranceT);
+      const interacting = Math.abs(mousePos.x) < 0.99 || Math.abs(mousePos.y) < 0.99;
 
-      // Intentional, calm tilt per user direction requirements (pointer down tilts up, pointer right tilts left)
-      if (!prefersReducedMotion) {
-        blobMesh.rotation.y = mouse.currentX * -0.14 + elapsed * 0.02;
-        blobMesh.rotation.x = -mouse.currentY * 0.08;
+      let mouseSpeed = interacting ? mouseWorld3D.distanceTo(prevMouseWorld) : 0;
+      if (mouseSpeed > 3) mouseSpeed = 3;
+      prevMouseWorld.copy(mouseWorld3D);
+
+      let damping = 0.91;
+      damping = lerp(damping, 0.992, dropF);
+      damping = lerp(damping, 0.9, shapeF);
+      damping = lerp(damping, 0.985, flyF);
+
+      const clusterActive = Math.max(heroF, entranceT < 1 ? 1 : 0);
+
+      // --- Per-ball forces ---
+      for (const b of balls) {
+        // Subtle organic float wave
+        if (heroF > 0.01 && !prefersReducedMotion) {
+          b.velocity.x += Math.sin(time * 0.4 + b.id * 1.5) * 0.0004 * b.radius * heroF;
+          b.velocity.y += Math.cos(time * 0.5 + b.id * 1.2) * 0.0004 * b.radius * heroF;
+          b.velocity.z += Math.sin(time * 0.35 + b.id) * 0.0001 * heroF;
+        }
+
+        // Center Gravity Field
+        const cluster = params.centerAttractForce * attractionBoost * clusterActive;
+        if (cluster > 0.00001) {
+          b.velocity.x += (clusterCenter.x - b.position.x) * cluster * 0.38;
+          b.velocity.y += (clusterCenter.y - b.position.y) * cluster * 1.85;
+          b.velocity.z += (clusterCenter.z - b.position.z) * cluster * 1.8;
+        }
+
+        // Gravity Drop Stage
+        if (dropF > 0.001) {
+          b.velocity.y -= 0.011 * dropF;
+        }
+
+        // Heart Shape Stage
+        if (shapeF > 0.001) {
+          const k = 0.06 * shapeF;
+          b.velocity.x += (b.shapeTarget.x - b.position.x) * k;
+          b.velocity.y += (b.shapeTarget.y - b.position.y) * k;
+          b.velocity.z += (b.shapeTarget.z - b.position.z) * k;
+        }
+
+        // Fly Through Stage
+        if (flyF > 0.001) {
+          const stagger = (b.id * 0.6180339887) % 1;
+          const local = smoothstep(stagger * 0.55, stagger * 0.55 + 0.45, flyF);
+          b.velocity.z += 0.05 * local;
+          b.velocity.x += b.position.x * 0.006 * local;
+          b.velocity.y += b.position.y * 0.006 * local;
+        }
+
+        // Interactive Cursor Repulsion
+        if (interacting) {
+          diffVec.subVectors(b.position, mouseWorld3D);
+          const dist = diffVec.length();
+          const down = mousePos.isDown;
+          const rad = down ? params.mouseRepelRadius * 1.4 : params.mouseRepelRadius;
+          const force = down ? params.mouseRepelForce * 1.7 : params.mouseRepelForce;
+          if (dist < rad && dist > 0.0001) {
+            const ratio = dist / rad;
+            const sf = 1 - ratio * ratio * (3 - 2 * ratio);
+            const push = sf * force * (1 + mouseSpeed * 3.2);
+            diffVec.normalize();
+            diffVec.z *= 0.12;
+            diffVec.normalize();
+            b.velocity.addScaledVector(diffVec, push);
+          }
+        }
+
+        b.velocity.multiplyScalar(damping);
+        b.position.addScaledVector(b.velocity, 1);
+
+        b.material.opacity =
+          flyF > 0.001
+            ? 1 - smoothstep(camera.position.z - 2.6, camera.position.z - 0.3, b.position.z)
+            : 1;
+
+        const target = b.radius * (1 - (1 - shapeScale) * shapeF);
+        b.visualScale += (target - b.visualScale) * 0.12;
+        b.sphere.scale.setScalar(b.visualScale);
       }
 
-      // Gentle starfield drift
-      starMesh.rotation.z = elapsed * 0.004;
+      // --- 4 Sub-steps Verlet Collision Resolution ---
+      const collideScale = 0.28 * (1 - 0.93 * shapeF) * (1 - flyF);
+      for (let step = 0; step < 4; step++) {
+        for (let i = 0; i < balls.length; i++) {
+          for (let j = i + 1; j < balls.length; j++) {
+            const a = balls[i];
+            const b = balls[j];
+            collideDiff.subVectors(b.position, a.position);
+            const dist = collideDiff.length();
+            const min = a.visualScale + b.visualScale;
+            if (dist < min && dist > 0.001) {
+              const overlap = min - dist;
+              collideDiff.multiplyScalar(1 / dist);
+              const total = a.mass + b.mass;
+              const r1 = b.mass / total;
+              const r2 = a.mass / total;
+              a.position.addScaledVector(collideDiff, -overlap * r1 * collideScale);
+              b.position.addScaledVector(collideDiff, overlap * r2 * collideScale);
+              relVel.subVectors(b.velocity, a.velocity);
+              const along = relVel.dot(collideDiff);
+              if (along < -0.0001) {
+                const impulse = (-(1 + params.bounciness) * along) / (1 / a.mass + 1 / b.mass);
+                a.velocity.addScaledVector(collideDiff, -impulse / a.mass);
+                b.velocity.addScaledVector(collideDiff, impulse / b.mass);
+              }
+            }
+          }
+        }
+      }
+
+      // --- Viewport Bounds Containment & Physics Rolling ---
+      const xBound = viewportWidth / 2 - 0.2;
+      const topY = viewportHeight / 2 - 0.05;
+      const floorY = -viewportHeight / 2 + 0.05;
+      const zBound = 2.5;
+      const restitution = 0.3 + 0.35 * dropF;
+      const contain = flyF < 0.5;
+      const zContain = flyF < 0.02;
+
+      for (const b of balls) {
+        const r = b.visualScale;
+        if (contain) {
+          if (b.position.x < -xBound - r) {
+            b.position.x = -xBound - r;
+            b.velocity.x *= params.rebound;
+          } else if (b.position.x > xBound + r) {
+            b.position.x = xBound + r;
+            b.velocity.x *= params.rebound;
+          }
+          if (b.position.y - r < floorY) {
+            b.position.y = floorY + r;
+            if (b.velocity.y < 0) b.velocity.y = -b.velocity.y * restitution;
+            if (dropF > 0.3) {
+              b.velocity.x *= 0.86;
+              b.velocity.z *= 0.86;
+            }
+          }
+          if (b.position.y + r > topY) {
+            b.position.y = topY - r;
+            if (b.velocity.y > 0) b.velocity.y *= params.rebound;
+          }
+        }
+        if (zContain) {
+          if (b.position.z < -zBound) {
+            b.position.z = -zBound;
+            b.velocity.z *= params.rebound;
+          } else if (b.position.z > zBound) {
+            b.position.z = zBound;
+            b.velocity.z *= params.rebound;
+          }
+        }
+
+        // Realistic Rolling Rotation along velocity vector
+        deltaPos.copy(b.position).sub(b.meshGroup.position);
+        if (deltaPos.lengthSq() > 0.000001) {
+          rotAxis.set(deltaPos.y, -deltaPos.x, 0).normalize();
+          b.meshGroup.rotateOnWorldAxis(rotAxis, (deltaPos.length() / b.radius) * 0.95);
+        }
+        b.meshGroup.position.copy(b.position);
+      }
+
+      // Starfield gentle background drift
+      starMesh.rotation.z = time * 0.004;
 
       renderer.render(scene, camera);
     };
 
-    animate();
+    simulateAndRender();
 
-    // 9. ResizeObserver
+    // 11. ResizeObserver
     const resizeObserver = new ResizeObserver(() => {
-      if (!container) return;
+      if (!camera || !renderer || !container) return;
       const w = getWidth();
       const h = getHeight();
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      updateFrustumBounds();
+      assignHeartTargets();
     });
     resizeObserver.observe(container);
 
+    // 12. Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('blur', onWindowBlur);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       intersectionObserver.disconnect();
       resizeObserver.disconnect();
