@@ -109,9 +109,6 @@ export default function WelcomePage() {
           <Link href="#features" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
             Terminal
           </Link>
-          <Link href="#status" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
-            Status
-          </Link>
         </nav>
 
         {/* Right Actions */}
@@ -320,7 +317,7 @@ export default function WelcomePage() {
         </section>
 
         {/* SECTION 2: FEATURES & WORKFLOW */}
-        <section id="features" className="min-h-screen pt-36 pb-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center relative z-20">
+        <section id="features" className="min-h-screen pt-36 pb-36 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center relative z-20">
           <div className="max-w-2xl mb-12">
             <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
               [ 01 — Developer Experience ]
@@ -384,48 +381,6 @@ export default function WelcomePage() {
             </div>
           </div>
         </section>
-
-        {/* SECTION 3: FOOTER & STATUS */}
-        <footer id="status" className="border-t border-white/[0.08] bg-[#050309]/80 backdrop-blur-xl py-16 px-6 md:px-16 relative z-20">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex flex-col items-center md:items-start gap-1">
-              <div className="text-lg font-bold tracking-[0.2em] uppercase font-mono text-white">
-                CLOUDIDE
-              </div>
-              <p className="text-xs text-zinc-400 font-light">
-                © 2026 Om Saraykar
-              </p>
-            </div>
-
-            {/* System Status Pill */}
-            <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] text-xs font-mono">
-              <span className="flex h-2 w-2 relative">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${systemStatus.dockerAvailable ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75`} />
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${systemStatus.dockerAvailable ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              </span>
-              <span className="text-zinc-400">Docker Engine:</span>
-              <span className={systemStatus.dockerAvailable ? 'text-emerald-400 font-semibold' : 'text-amber-400 font-semibold'}>
-                {systemStatus.dockerAvailable ? 'Active' : 'Standby'}
-              </span>
-              <span className="text-zinc-600">|</span>
-              <span className="text-zinc-400">Platform:</span>
-              <span className="text-zinc-300 font-semibold">{systemStatus.platform}</span>
-            </div>
-
-            {/* Quick Links */}
-            <div className="flex items-center gap-6 text-xs text-zinc-400">
-              <Link href="#home" className="hover:text-white transition-colors">
-                Overview
-              </Link>
-              <Link href="#features" className="hover:text-white transition-colors">
-                Features
-              </Link>
-              <Link href="#status" className="hover:text-white transition-colors">
-                Status
-              </Link>
-            </div>
-          </div>
-        </footer>
       </main>
     </div>
   );
