@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 interface Ball {
   id: number;
@@ -9,8 +10,10 @@ interface Ball {
   mass: number;
   position: THREE.Vector3;
   velocity: THREE.Vector3;
+  rotVelocity: THREE.Vector3;
   meshGroup: THREE.Group;
-  sphere: THREE.Mesh;
+  mesh: THREE.Mesh;
+  dimensions: THREE.Vector3;
   material: THREE.MeshPhysicalMaterial;
   role: 'pastel' | 'light' | 'medium' | 'deep' | 'glass';
   isGlass: boolean;
@@ -171,18 +174,52 @@ export function HeroCanvas3D() {
     };
     updateFrustumBounds();
 
-    // 6. Spheres Initialization
+    // 6. Cuboids Initialization
     const mobile = getWidth() < 768;
     const n = mobile ? 54 : 96;
-    const sphereGeometry = register(new THREE.SphereGeometry(1, 40, 40));
+    const cuboidGeometry = register(new RoundedBoxGeometry(1, 1, 1, 2, 0.14));
 
     let balls: Ball[] = [];
     for (let i = 0; i < n; i++) {
-      let radius = 0.33;
+      let radius = 0.28;
       const r = Math.random();
-      if (r < 0.3) radius = 0.27 + Math.random() * 0.12;
-      else if (r < 0.8) radius = 0.42 + Math.random() * 0.18;
-      else radius = 0.66 + Math.random() * 0.21;
+      if (r < 0.35) radius = 0.22 + Math.random() * 0.08;
+      else if (r < 0.82) radius = 0.32 + Math.random() * 0.14;
+      else radius = 0.48 + Math.random() * 0.14;
+
+      // Varied cuboid aspect ratios (slabs, blocks, elongated bricks, cubes)
+      const shapeType = Math.random();
+      let aspectX = 1;
+      let aspectY = 1;
+      let aspectZ = 1;
+      if (shapeType < 0.28) {
+        // Flat slab / tile
+        aspectX = 1.25 + Math.random() * 0.25;
+        aspectY = 0.75 + Math.random() * 0.2;
+        aspectZ = 1.1 + Math.random() * 0.25;
+      } else if (shapeType < 0.55) {
+        // Tall block
+        aspectX = 0.8 + Math.random() * 0.2;
+        aspectY = 1.3 + Math.random() * 0.3;
+        aspectZ = 0.85 + Math.random() * 0.25;
+      } else if (shapeType < 0.8) {
+        // Elongated brick
+        aspectX = 1.35 + Math.random() * 0.25;
+        aspectY = 0.85 + Math.random() * 0.2;
+        aspectZ = 0.8 + Math.random() * 0.2;
+      } else {
+        // Near-cubic block
+        aspectX = 1.0 + Math.random() * 0.15;
+        aspectY = 1.0 + Math.random() * 0.15;
+        aspectZ = 1.0 + Math.random() * 0.15;
+      }
+
+      const baseDim = radius * 1.5;
+      const dimX = baseDim * aspectX;
+      const dimY = baseDim * aspectY;
+      const dimZ = baseDim * aspectZ;
+      const dimensions = new THREE.Vector3(dimX, dimY, dimZ);
+      const visualScale = Math.max(dimX, dimY, dimZ) * 0.52;
 
       const mass = Math.pow(radius, 3);
       const isGlass = Math.random() < 0.22;
@@ -245,12 +282,26 @@ export function HeroCanvas3D() {
       }
 
       const group = new THREE.Group();
-      const mesh = new THREE.Mesh(sphereGeometry, mat);
-      mesh.scale.setScalar(radius);
+      const mesh = new THREE.Mesh(cuboidGeometry, mat);
+      mesh.scale.copy(dimensions);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+
+      // Random initial 3D orientation for organic block cluster
+      group.rotation.set(
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2
+      );
+
       group.add(mesh);
       scene.add(group);
+
+      const rotVelocity = new THREE.Vector3(
+        (Math.random() - 0.5) * 0.012,
+        (Math.random() - 0.5) * 0.012,
+        (Math.random() - 0.5) * 0.012
+      );
 
       balls.push({
         id: i,
@@ -258,12 +309,14 @@ export function HeroCanvas3D() {
         mass,
         position: new THREE.Vector3(),
         velocity: new THREE.Vector3(),
+        rotVelocity,
         meshGroup: group,
-        sphere: mesh,
+        mesh,
+        dimensions,
         material: mat,
         role,
         isGlass,
-        visualScale: radius,
+        visualScale,
         color,
         restPosition: new THREE.Vector3(),
         shapeTarget: new THREE.Vector3(),
@@ -462,8 +515,8 @@ export function HeroCanvas3D() {
         }
 
         // Soft floor cushion in hero stage to keep bottom text area unobstructed
-        if (heroF > 0.15 && b.position.y < -1.85) {
-          b.velocity.y += (-1.85 - b.position.y) * 0.1 * heroF;
+        if (heroF > 0.15 && b.position.y < -1.75) {
+          b.velocity.y += (-1.75 - b.position.y) * 0.1 * heroF;
         }
 
         // Gravity Drop Stage
@@ -493,8 +546,8 @@ export function HeroCanvas3D() {
         b.velocity.multiplyScalar(damping);
         b.position.addScaledVector(b.velocity, 1);
         b.material.opacity = 1;
-        b.visualScale = b.radius;
-        b.sphere.scale.setScalar(b.visualScale);
+        b.visualScale = Math.max(b.dimensions.x, b.dimensions.y, b.dimensions.z) * 0.52;
+        b.mesh.scale.copy(b.dimensions);
       }
 
       // --- 4 Sub-steps Verlet Collision Resolution ---
@@ -521,6 +574,13 @@ export function HeroCanvas3D() {
                 const impulse = (-(1 + params.bounciness) * along) / (1 / a.mass + 1 / b.mass);
                 a.velocity.addScaledVector(collideDiff, -impulse / a.mass);
                 b.velocity.addScaledVector(collideDiff, impulse / b.mass);
+                // Angular tumbling impulse on collision
+                a.rotVelocity.x += (Math.random() - 0.5) * 0.006;
+                b.rotVelocity.x += (Math.random() - 0.5) * 0.006;
+                a.rotVelocity.y += (Math.random() - 0.5) * 0.006;
+                b.rotVelocity.y += (Math.random() - 0.5) * 0.006;
+                a.rotVelocity.z += (Math.random() - 0.5) * 0.006;
+                b.rotVelocity.z += (Math.random() - 0.5) * 0.006;
               }
             }
           }
@@ -530,7 +590,7 @@ export function HeroCanvas3D() {
       // --- Viewport Bounds Containment & Physics Rolling ---
       const xBound = viewportWidth / 2 - 0.2;
       const topY = viewportHeight / 2 - 0.05;
-      const floorY = -viewportHeight / 2 + 0.75;
+      const floorY = -viewportHeight / 2 + 0.65;
       const zBound = 2.5;
       const restitution = 0.3 + 0.35 * dropF;
       const contain = true;
@@ -552,6 +612,7 @@ export function HeroCanvas3D() {
             if (dropF > 0.3) {
               b.velocity.x *= 0.86;
               b.velocity.z *= 0.86;
+              b.rotVelocity.multiplyScalar(0.9);
             }
           }
           const effectiveTopY = topY;
@@ -570,12 +631,17 @@ export function HeroCanvas3D() {
           }
         }
 
-        // Realistic Rolling Rotation along velocity vector
+        // Realistic Rolling & 3D Tumbling Rotation for Cuboids
+        b.meshGroup.rotation.x += b.rotVelocity.x;
+        b.meshGroup.rotation.y += b.rotVelocity.y;
+        b.meshGroup.rotation.z += b.rotVelocity.z;
+
         deltaPos.copy(b.position).sub(b.meshGroup.position);
         if (deltaPos.lengthSq() > 0.000001) {
           rotAxis.set(deltaPos.y, -deltaPos.x, 0).normalize();
           b.meshGroup.rotateOnWorldAxis(rotAxis, (deltaPos.length() / b.radius) * 0.95);
         }
+        b.rotVelocity.multiplyScalar(0.997);
         b.meshGroup.position.copy(b.position);
       }
 
