@@ -173,16 +173,16 @@ export function HeroCanvas3D() {
 
     // 6. Spheres Initialization
     const mobile = getWidth() < 768;
-    const n = mobile ? 42 : 72;
+    const n = mobile ? 54 : 96;
     const sphereGeometry = register(new THREE.SphereGeometry(1, 40, 40));
 
     let balls: Ball[] = [];
     for (let i = 0; i < n; i++) {
-      let radius = 0.32;
+      let radius = 0.33;
       const r = Math.random();
-      if (r < 0.35) radius = 0.24 + Math.random() * 0.10;
-      else if (r < 0.82) radius = 0.36 + Math.random() * 0.14;
-      else radius = 0.52 + Math.random() * 0.16;
+      if (r < 0.3) radius = 0.27 + Math.random() * 0.12;
+      else if (r < 0.8) radius = 0.42 + Math.random() * 0.18;
+      else radius = 0.66 + Math.random() * 0.21;
 
       const mass = Math.pow(radius, 3);
       const isGlass = Math.random() < 0.22;
@@ -306,14 +306,13 @@ export function HeroCanvas3D() {
       for (const b of balls) {
         const a = Math.random() * Math.PI * 2;
         const px = Math.cos(a) * R * 1.25;
-        // Keep initial scatter mostly below the text area so balls don't fly across the headline
-        const py = -Math.abs(Math.sin(a) * R * 0.85) - 1.0;
+        const py = Math.sin(a) * R * 0.85;
         const pz = (Math.random() - 0.5) * 4;
         b.position.set(px, py, pz);
         b.meshGroup.position.copy(b.position);
         if (inward) {
           b.velocity
-            .set(-px, -py - 3.2, -pz)
+            .set(-px, -py, -pz)
             .normalize()
             .multiplyScalar(0.09 + Math.random() * 0.05);
         } else {
@@ -342,8 +341,8 @@ export function HeroCanvas3D() {
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
-    // Dynamic Cluster Center (Positioned in the lower viewport well below text)
-    const clusterCenter = new THREE.Vector3(0, -3.3, 0);
+    // Dynamic Cluster Center (Floating gracefully in the center of the viewport)
+    const clusterCenter = new THREE.Vector3(0, 0.35, 0);
 
     // 8. Mouse & Pointer Tracking
     const mousePos = { x: 99, y: 99, isDown: false };
@@ -456,9 +455,9 @@ export function HeroCanvas3D() {
           b.velocity.z += (clusterCenter.z - b.position.z) * cluster * 1.8;
         }
 
-        // Soft downward cushion in hero stage to keep text area completely unobstructed
-        if (heroF > 0.1 && b.position.y > -1.75) {
-          b.velocity.y -= (b.position.y - (-1.75)) * 0.12 * heroF;
+        // Soft floor cushion in hero stage to keep bottom text area unobstructed
+        if (heroF > 0.15 && b.position.y < -1.85) {
+          b.velocity.y += (-1.85 - b.position.y) * 0.1 * heroF;
         }
 
         // Gravity Drop Stage
@@ -571,7 +570,7 @@ export function HeroCanvas3D() {
               b.velocity.z *= 0.86;
             }
           }
-          const effectiveTopY = heroF > 0.15 ? Math.min(topY, -1.65) : topY;
+          const effectiveTopY = topY;
           if (b.position.y + r > effectiveTopY) {
             b.position.y = effectiveTopY - r;
             if (b.velocity.y > 0) b.velocity.y *= params.rebound;

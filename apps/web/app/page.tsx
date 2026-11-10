@@ -79,130 +79,137 @@ export default function WelcomePage() {
       <div className="fixed top-10 right-0 w-[450px] h-[450px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none z-0" />
 
       {/* Fixed Top Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 h-20 px-8 md:px-16 flex items-center justify-between z-40 bg-transparent select-none">
-        {/* Brand Wordmark */}
-        <Link href="#home" className="text-lg font-bold tracking-tight text-white hover:opacity-85 transition-opacity">
-          CloudIDE
+      <header className="fixed top-0 left-0 right-0 h-24 px-8 md:px-16 flex items-center justify-between z-40 bg-transparent select-none">
+        {/* Wordmark */}
+        <Link href="#home" className="text-xl md:text-2xl font-black tracking-[0.25em] text-white hover:opacity-80 transition-opacity uppercase font-mono">
+          GRAVITY
         </Link>
 
         {/* Center Nav Links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-zinc-300">
-          <Link href="#home" className="hover:text-white transition-colors">
-            Overview
+        <nav className="hidden md:flex items-center gap-10 text-xs md:text-sm font-medium text-zinc-300">
+          <Link href="#works" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Works
           </Link>
-          <Link href="#features" className="hover:text-white transition-colors">
-            Features
+          <Link href="#services" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Services
+          </Link>
+          <Link href="#team" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Team
+          </Link>
+          <Link href="#story" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Story
+          </Link>
+          <Link href="#contact" className="hover:text-white transition-opacity opacity-80 hover:opacity-100">
+            Contact
           </Link>
         </nav>
 
-        {/* Right Auth / Action Buttons */}
-        <div className="flex items-center gap-3">
+        {/* Right Actions */}
+        <div className="flex items-center gap-3.5">
           <button
             onClick={() => handleEnterPlayground()}
-            className="text-xs font-medium text-zinc-300 hover:text-white px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] backdrop-blur-sm transition-all cursor-pointer"
+            className="w-11 h-11 rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-xl shadow-lg flex items-center justify-center text-white hover:bg-white/[0.15] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            aria-label="Open studio controls"
           >
-            Sign In
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+            >
+              <line x1="4" y1="21" x2="4" y2="14" />
+              <line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" />
+              <line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="2" y1="14" x2="6" y2="14" />
+              <line x1="10" y1="8" x2="14" y2="8" />
+              <line x1="18" y1="16" x2="22" y2="16" />
+            </svg>
           </button>
           <button
             onClick={() => handleEnterPlayground()}
-            className="text-xs font-semibold text-zinc-950 px-5 py-2 rounded-full bg-white hover:bg-zinc-100 shadow-md transition-all hover:scale-[1.02] active:scale-95 cursor-pointer flex items-center gap-1.5"
+            className="inline-flex items-center gap-4 pl-6 pr-1.5 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 shadow-lg text-sm font-medium text-white hover:border-purple-400/50 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
-            <span>Launch IDE</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Contact us</span>
+            <span className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 shadow-md shadow-purple-500/40 flex items-center justify-center">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
           </button>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 flex flex-col pt-20">
+      <main className="relative z-10 flex flex-col">
         {/* SECTION 1: HERO */}
-        <section id="home" className="min-h-screen flex flex-col items-center justify-start text-center px-6 pt-16 md:pt-24 pb-12 max-w-5xl mx-auto w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#150e26]/80 border border-purple-500/30 text-purple-300 text-xs font-medium mb-5 backdrop-blur-md shadow-lg"
-          >
-            <Zap className="w-3.5 h-3.5 text-purple-400" />
-            <span>Ephemeral Docker Micro-Containers</span>
-          </motion.div>
+        <section
+          id="home"
+          className="min-h-screen flex items-end justify-between px-8 md:px-16 pb-14 md:pb-16 pt-28 max-w-7xl mx-auto w-full relative z-20 pointer-events-none"
+        >
+          <div className="w-full flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pointer-events-auto">
+            {/* Left Column */}
+            <div className="flex flex-col items-start text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.15 }}
+                className="text-xs md:text-sm font-mono tracking-wider uppercase text-purple-400 mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+              >
+                [ Digital studio ]
+              </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.08 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.06] max-w-3xl drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
-          >
-            Elevate Your <br />
-            Coding Experience
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.16 }}
-            className="text-xs sm:text-sm md:text-base text-zinc-300 max-w-lg mt-4 leading-relaxed font-light drop-shadow-[0_2px_16px_rgba(0,0,0,0.95)]"
-          >
-            Unlock your development potential in a fully isolated environment, powered by dedicated containers.
-          </motion.p>
-
-          {/* Quick Feature Badges */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.22 }}
-            className="flex flex-wrap items-center justify-center gap-2.5 mt-5 text-[11px] text-zinc-200 font-mono"
-          >
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0e0a1a]/85 border border-white/[0.12] backdrop-blur-md shadow-lg">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-zinc-200 font-medium">&lt; 150ms Boot</span>
+              <motion.h1
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.28 }}
+                className="text-4xl sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-tight text-white leading-[0.98] drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)] whitespace-nowrap"
+              >
+                Less noise. More gravity.
+              </motion.h1>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0e0a1a]/85 border border-white/[0.12] backdrop-blur-md shadow-lg">
-              <Terminal className="w-3 h-3 text-purple-400" />
-              <span className="text-zinc-200 font-medium">PTY Shell</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0e0a1a]/85 border border-white/[0.12] backdrop-blur-md shadow-lg">
-              <ShieldCheck className="w-3 h-3 text-indigo-400" />
-              <span className="text-zinc-200 font-medium">Kernel Sandboxed</span>
-            </div>
-          </motion.div>
 
-          {/* Center Capsule CTA Form */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.28 }}
-            className="mt-7 relative z-30 w-full max-w-sm"
-          >
-            <form onSubmit={handleEnterPlayground} className="flex items-center justify-center">
-              <div className="flex items-center gap-2 p-1.5 bg-[#100b1e]/95 backdrop-blur-xl border border-white/[0.16] rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.8)] hover:border-purple-500/50 transition-all w-full">
-                <span className="text-xs text-purple-300 font-mono pl-3.5 select-none font-semibold">@</span>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="developer"
-                  className="bg-transparent text-xs text-white placeholder-zinc-400 outline-none flex-1 min-w-0 font-mono"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-white hover:bg-zinc-100 text-zinc-950 font-semibold text-xs px-6 py-2.5 rounded-full transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-2 shrink-0 cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                  ) : null}
-                  <span>Sign Up & Code</span>
-                </button>
+            {/* Right Column */}
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.45 }}
+              className="w-full max-w-[280px] flex flex-col gap-6 text-left shrink-0"
+            >
+              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+                We design digital experiences that remove distraction and amplify presence.
+              </p>
+              <div className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+                © 2026 — Independent digital agency
               </div>
-            </form>
-          </motion.div>
-
-          {/* Scroll Cue */}
-          <div className="mt-8 flex flex-col items-center gap-1 text-zinc-400 text-xs font-mono select-none px-3.5 py-1 rounded-full bg-[#07050d]/80 backdrop-blur-md border border-white/[0.08] shadow-md">
-            <span className="uppercase tracking-widest text-[9px] text-zinc-400 font-medium">Scroll to explore</span>
-            <ChevronDown className="w-3.5 h-3.5 animate-bounce text-purple-400" />
+              <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-mono uppercase tracking-widest select-none">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path d="M12 5v14m-7-7 7 7 7-7" />
+                </svg>
+                <span>Scroll</span>
+              </div>
+            </motion.div>
           </div>
         </section>
 
