@@ -396,7 +396,7 @@ export default function WelcomePage() {
                 © 2026 Om Saraykar
               </p>
               <p className="text-xs text-zinc-500 font-light">
-                Built with Next.js, and stack
+                Built with Next.js, Fastify, Docker, Three.js & TypeScript
               </p>
             </div>
 
