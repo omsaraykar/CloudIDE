@@ -10,16 +10,10 @@ import {
   Terminal,
   ShieldCheck,
   Zap,
-  Cpu,
   Layers,
-  Lock,
-  Server,
   CheckCircle2,
   ArrowRight,
   Code2,
-  Boxes,
-  HelpCircle,
-  ExternalLink,
   Laptop,
 } from 'lucide-react';
 import { api } from '../lib/api';
@@ -120,14 +114,8 @@ export default function WelcomePage() {
           <Link href="#home" className="hover:text-white transition-colors">
             Overview
           </Link>
-          <Link href="#architecture" className="hover:text-white transition-colors">
-            Architecture
-          </Link>
           <Link href="#features" className="hover:text-white transition-colors">
             Features
-          </Link>
-          <Link href="#security" className="hover:text-white transition-colors">
-            Security
           </Link>
           <Link href="#faq" className="hover:text-white transition-colors">
             FAQ
@@ -245,78 +233,10 @@ export default function WelcomePage() {
           </div>
         </section>
 
-        {/* SECTION 2: ARCHITECTURE & ENGINE */}
-        <section id="architecture" className="min-h-screen py-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-b border-white/[0.08] pb-10">
-            <div>
-              <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3">
-                [ 01 — Runtime Architecture ]
-              </div>
-              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white leading-tight">
-                When code runs with <br />
-                true isolation.
-              </h2>
-            </div>
-            <p className="text-zinc-400 text-sm max-w-md leading-relaxed font-light">
-              As you scroll, notice the 3D physics field surrendering to gravity. Every workspace is built on a container-first architecture designed for zero friction and instant execution.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <div className="group relative p-8 rounded-2xl bg-zinc-950/60 backdrop-blur-xl border border-white/[0.08] hover:border-purple-500/40 transition-all hover:-translate-y-1 shadow-2xl">
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 transition-transform">
-                <Boxes className="w-6 h-6" />
-              </div>
-              <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-1">01 / Engine</div>
-              <h3 className="text-xl font-bold text-white mb-2">Docker Micro-Containers</h3>
-              <p className="text-zinc-400 text-xs leading-relaxed font-light mb-6">
-                Fastify orchestrates dedicated Docker containers with automated bind-mounted workspaces and strict memory quotas.
-              </p>
-              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono">
-                <span className="text-purple-300">Boot Time</span>
-                <span className="text-zinc-300 font-semibold">&lt; 150ms</span>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="group relative p-8 rounded-2xl bg-zinc-950/60 backdrop-blur-xl border border-white/[0.08] hover:border-indigo-500/40 transition-all hover:-translate-y-1 shadow-2xl">
-              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform">
-                <Terminal className="w-6 h-6" />
-              </div>
-              <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-1">02 / Shell</div>
-              <h3 className="text-xl font-bold text-white mb-2">WebSocket PTY Streams</h3>
-              <p className="text-zinc-400 text-xs leading-relaxed font-light mb-6">
-                Direct bidirectional byte streaming via node-pty and xterm.js enables 60fps shell updates, full ANSI colors, and interactive CLI programs.
-              </p>
-              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono">
-                <span className="text-indigo-300">Terminal Latency</span>
-                <span className="text-zinc-300 font-semibold">&lt; 5ms</span>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="group relative p-8 rounded-2xl bg-zinc-950/60 backdrop-blur-xl border border-white/[0.08] hover:border-violet-500/40 transition-all hover:-translate-y-1 shadow-2xl">
-              <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 mb-6 group-hover:scale-110 transition-transform">
-                <Cpu className="w-6 h-6" />
-              </div>
-              <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-1">03 / Editor</div>
-              <h3 className="text-xl font-bold text-white mb-2">Monaco Code Core</h3>
-              <p className="text-zinc-400 text-xs leading-relaxed font-light mb-6">
-                Equipped with the same editor core powering VS Code, complete with syntax trees, intelligent autocomplete, and multi-file project tabs.
-              </p>
-              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono">
-                <span className="text-violet-300">Editor Engine</span>
-                <span className="text-zinc-300 font-semibold">VS Code Core</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 3: FEATURES & WORKFLOW */}
+        {/* SECTION 2: FEATURES & WORKFLOW */}
         <section id="features" className="min-h-screen py-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center">
           <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3">
-            [ 02 — Developer Experience ]
+            [ 01 — Developer Experience ]
           </div>
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-6 leading-tight">
             Built for velocity. <br />
@@ -377,54 +297,11 @@ export default function WelcomePage() {
           </div>
         </section>
 
-        {/* SECTION 4: SECURITY & ISOLATION */}
-        <section id="security" className="min-h-screen py-24 px-6 md:px-16 max-w-6xl mx-auto w-full flex flex-col justify-center">
-          <div className="p-10 md:p-14 rounded-3xl bg-gradient-to-b from-[#140b28]/80 to-[#0c071a]/90 border border-purple-500/20 backdrop-blur-2xl relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
-
-            <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3">
-              [ 03 — Hardened Sandboxing ]
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-6">
-              Security at the kernel boundary.
-            </h2>
-            <p className="text-zinc-400 text-sm max-w-2xl mb-12 leading-relaxed font-light">
-              Unlike shared VM multi-tenant hosting, CloudIDE enforces strict Linux namespace boundaries and cgroup limits for every container, ensuring zero noisy-neighbor interference.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                <Lock className="w-5 h-5 text-purple-400 mb-3" />
-                <h4 className="text-sm font-semibold text-white mb-1.5">Namespace Isolation</h4>
-                <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                  Process ID, Network, Mount, and IPC namespaces are fully compartmentalized per session.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                <Cpu className="w-5 h-5 text-indigo-400 mb-3" />
-                <h4 className="text-sm font-semibold text-white mb-1.5">Cgroup Resource Caps</h4>
-                <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                  Explicit memory limits, CPU quotas, and swap policies guarantee reliable deterministic host performance.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                <Server className="w-5 h-5 text-violet-400 mb-3" />
-                <h4 className="text-sm font-semibold text-white mb-1.5">Automated Lifecycle</h4>
-                <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                  Containers automatically hibernate when idle and spin down gracefully to prevent orphaned workloads.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 5: FAQ & INTERACTIVE ACCORDION */}
+        {/* SECTION 3: FAQ & INTERACTIVE ACCORDION */}
         <section id="faq" className="min-h-screen py-24 px-6 md:px-16 max-w-4xl mx-auto w-full flex flex-col justify-center">
           <div className="text-center mb-16">
             <div className="text-xs font-mono tracking-widest text-purple-400 uppercase mb-3">
-              [ 04 — Knowledge Base ]
+              [ 02 — Knowledge Base ]
             </div>
             <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4">
               Frequently Asked Questions
@@ -466,7 +343,7 @@ export default function WelcomePage() {
           </div>
         </section>
 
-        {/* SECTION 6: FOOTER & STATUS */}
+        {/* SECTION 4: FOOTER & STATUS */}
         <footer className="border-t border-white/[0.08] bg-[#050309]/80 backdrop-blur-xl py-16 px-6 md:px-16 relative z-20">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex flex-col items-center md:items-start gap-2">
@@ -498,9 +375,6 @@ export default function WelcomePage() {
             <div className="flex items-center gap-6 text-xs text-zinc-400">
               <Link href="#home" className="hover:text-white transition-colors">
                 Top
-              </Link>
-              <Link href="#architecture" className="hover:text-white transition-colors">
-                Architecture
               </Link>
               <Link href="#features" className="hover:text-white transition-colors">
                 Features
