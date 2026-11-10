@@ -56,8 +56,8 @@ export default function WelcomePage() {
     <div className="min-h-screen bg-[#07050d] text-white flex flex-col relative overflow-hidden font-sans selection:bg-purple-500/30 selection:text-white">
       {/* 3D Gravity Spheres Canvas Background & CSS Post-Processing Layering */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Soft royal blue & indigo radial bloom under canvas */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_80%,rgba(47,105,255,0.25),transparent_70%)]" />
+        {/* Soft violet & purple radial bloom under canvas */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_80%,rgba(139,92,246,0.25),transparent_70%)]" />
         <HeroCanvas3D />
         {/* Film grain texture to hide gradient banding and add tactile depth */}
         <div
